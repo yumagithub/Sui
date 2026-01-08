@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="./docs/light.png" alt="Sui Logo" width="200"/>
+</p>
 
-## Getting Started
+# Sui
 
-First, run the development server:
+## 行き先が、すっと決まる。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Sui は沖縄のスポット巡りをサポートするアプリです。
+観光地、飲食店、アクティビティなど、沖縄の魅力的なスポットを簡単に見つけることができます。
+カップルでも、一人でも、友達とでも。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 主な機能
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **スポット検索**: カテゴリやキーワードで沖縄のスポット
+- **ルート提案**: 現在地から目的地までの最適なルートを提案
+- **お気に入り登録**: 気に入ったスポットを保存して、いつでもアクセス可能
+- **レビュー閲覧**: 他のユーザーのレビューを参考にスポット選び
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## インストール方法
 
-## Learn More
+1. リポジトリをクローンします。
+   ```bash
+   git clone https://github.com/yumagithub/sui.git
+   ```
+2. 必要な依存関係をインストールします。
+   ```bash
+   pnpm install
+   ```
+3. アプリを起動します。
+   ```bash
+   pnpm dev
+   ```
+4. ブラウザで `http://localhost:3000` にアクセスします。
 
-To learn more about Next.js, take a look at the following resources:
+## 技術スタック
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js (App router)
+- TypeScript
+- Tailwind CSS + Shadcn UI
+- Supabase (DB & Auth)
+- Vercel (Hosting & PWA)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
+このプロジェクトは MIT ライセンスの下でライセンスされています。詳細は `LICENSE` ファイルを参照してください。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+バグ報告や機能提案は歓迎します。プルリクエストもお待ちしております！
+お気軽に参加してください！
+
+## Contact
+
+- 名前: Yuma
+- GitHub: https://github.com/yumagithub
+- Email: youqian373@gmail.com
