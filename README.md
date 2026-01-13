@@ -12,38 +12,69 @@ Sui は沖縄のスポット巡りをサポートするアプリです。
 
 ## 主な機能
 
-- **スポット検索**: カテゴリやキーワードで沖縄のスポット
+- **スポット検索**: カテゴリやキーワードで沖縄のスポットを検索
 - **ルート提案**: 現在地から目的地までの最適なルートを提案
 - **お気に入り登録**: 気に入ったスポットを保存して、いつでもアクセス可能
 - **レビュー閲覧**: 他のユーザーのレビューを参考にスポット選び
 
 ## インストール方法
 
+### 前提条件
+
+- Node.js 16.0.0 以上
+- npm または pnpm
+- Expo CLI（グローバルインストール推奨）
+
+### セットアップ手順
+
 1. リポジトリをクローンします。
+
    ```bash
    git clone https://github.com/yumagithub/sui.git
+   cd sui
    ```
-2. 必要な依存関係をインストールします。
+
+2. 依存関係をインストールします。
+
    ```bash
    pnpm install
    ```
-3. アプリを起動します。
+
+3. Expo のセットアップを確認します。
+
    ```bash
-   pnpm dev
+   npx expo --version
    ```
-4. ブラウザで `http://localhost:3000` にアクセスします。
+
+4. アプリを起動します。
+
+   ```bash
+   pnpm start
+   ```
+
+5. 以下のいずれかで実行します。
+   - **iOS シミュレータ**: ターミナルで `i` を入力
+   - **Android エミュレータ**: ターミナルで `a` を入力
+   - **Expo Go**: QR コードを iOS/Android の Expo Go アプリでスキャン
 
 ## 技術スタック
 
-- Next.js (App router)
+Frontend:
+
+- React Native (Expo)
 - TypeScript
-- Tailwind CSS + Shadcn UI
-- Supabase (DB & Auth)
-- Vercel (Hosting & PWA)
+- React Navigation
+- Expo Router
 
-## License
+UI / UX:
 
-このプロジェクトは MIT ライセンスの下でライセンスされています。詳細は `LICENSE` ファイルを参照してください。
+- NativeWind
+- Reanimated
+- Gesture Handler
+
+Backend:
+
+- Supabase
 
 ## Contributing
 
