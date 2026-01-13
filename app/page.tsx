@@ -1,65 +1,156 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useRouter } from "next/navigation";
+import ActionSearchBar from "@/components/kokonutui/action-search-bar";
+import { Card, CardContent } from "@/components/ui/card";
+import Header from "@/components/header";
+import { CategoryTabs } from "@/components/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Heart, MapPin } from "lucide-react";
+import { useState } from "react";
+import Image from "next/image";
+import { categories, spots, actions as actionsData } from "@/lib/data";
+
+export default function Page() {
+  const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+
+  // actionsをレンダリング形式に変換
+  const actions = actionsData.map((action) => ({
+    ...action,
+    icon: <action.icon className={`h-4 w-4 ${action.color || ""}`} />,
+  }));
+
+  const toggleFavorite = (spotId: number) => {
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(spotId)) {
+      newFavorites.delete(spotId);
+    } else {
+      newFavorites.add(spotId);
+    }
+    setFavorites(newFavorites);
+  };
+
+  const filteredSpots =
+    selectedCategory === "all"
+      ? spots
+      : spots.filter((spot) => spot.category === selectedCategory);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-linear-to-b from-white to-sky-50 dark:from-black dark:to-zinc-900 pb-24">
+      {/* Header */}
+      <Header />
+
+      {/* Search Bar */}
+      <ActionSearchBar
+        placeholder="スポット名・カテゴリで検索"
+        actions={actions}
+        onSubmit={(query) =>
+          router.push(`/search?q=${encodeURIComponent(query)}`)
+        }
+        onActionSelect={(a) => setSelectedCategory(a.id)}
+      />
+
+      {/* Categories */}
+      <CategoryTabs
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        categories={categories}
+      >
+        {/* Spots List */}
+        <div className="px-6 py-6 space-y-4">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            {selectedCategory === "all"
+              ? "おすすめスポット"
+              : `${
+                  categories.find((c) => c.id === selectedCategory)?.label || ""
+                }のスポット`}
+          </h2>
+
+          <div className="space-y-4">
+            {filteredSpots.map((spot) => (
+              <Card
+                key={spot.id}
+                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-0 bg-white/80 dark:bg-zinc-900/80"
+                onClick={() => router.push(`/spot/${spot.id}`)}
+              >
+                {/* Image Area */}
+                <div className="relative h-48 w-full bg-zinc-200 dark:bg-zinc-700">
+                  <Image
+                    src={spot.image}
+                    alt={spot.name}
+                    className="object-cover"
+                    fill
+                  />
+                  {/* Favorite Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(spot.id);
+                    }}
+                    className="absolute top-3 right-3 p-2 rounded-full bg-white/90 dark:bg-zinc-800/90 hover:bg-white dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    <Heart
+                      className={`h-5 w-5 ${
+                        favorites.has(spot.id)
+                          ? "fill-red-500 text-red-500"
+                          : "text-zinc-400"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Info Area */}
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
+                        {spot.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {categories.find((c) => c.id === spot.category)
+                            ?.label || spot.category}
+                        </Badge>
+                        <div className="flex items-center gap-1 text-sm">
+                          <span className="text-yellow-500">★</span>
+                          <span className="font-medium">{spot.rating}</span>
+                          <span className="text-zinc-500">
+                            ({spot.review}件)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                    {spot.description}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-700">
+                    <div className="flex items-center gap-1 text-sm text-zinc-500">
+                      <MapPin className="h-4 w-4" />
+                      <span>{spot.distance}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/spot/${spot.id}`);
+                      }}
+                    >
+                      詳細を見る
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-39.5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/8 px-5 transition-colors hover:border-transparent hover:bg-black/4 dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-39.5"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </CategoryTabs>
     </div>
   );
 }
