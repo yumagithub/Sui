@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/light.png" alt="Sui Logo" width="200"/>
+  <img src="./assets/images/icon.png" alt="Sui Logo" width="200"/>
 </p>
 
 # Sui
