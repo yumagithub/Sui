@@ -1,4 +1,13 @@
-import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import {
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,16 +17,24 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/contexts/auth';
+import { useVisits } from '@/hooks/use-visits';
 import { GENRE_PREFS_KEY } from '@/app/onboarding';
 import type { ComponentProps } from 'react';
 
 type SFSymbol = ComponentProps<typeof IconSymbol>['name'];
 
-const MENU_ITEMS: { label: string; icon: SFSymbol; danger?: boolean }[] = [
-  { label: 'プロフィール編集', icon: 'person.crop.circle' },
-  { label: '好み・エリア設定', icon: 'slider.horizontal.3' },
-  { label: '通知設定', icon: 'bell' },
-  { label: 'ログアウト', icon: 'rectangle.portrait.and.arrow.right', danger: true },
+const MENU_ITEMS: { label: string; icon: SFSymbol; action: string; danger?: boolean }[] = [
+  { label: '好み・ジャンル設定', icon: 'slider.horizontal.3', action: 'genres' },
+  { label: 'ログアウト', icon: 'rectangle.portrait.and.arrow.right', action: 'logout', danger: true },
+];
+
+const GENRES = [
+  { slug: 'nature', label: '自然・絶景', emoji: '🌿' },
+  { slug: 'beach', label: 'ビーチ・海', emoji: '🏖️' },
+  { slug: 'cafe', label: 'カフェ・グルメ', emoji: '☕' },
+  { slug: 'history', label: '歴史・文化', emoji: '🏯' },
+  { slug: 'local', label: '穴場・ローカル', emoji: '🗺️' },
+  { slug: 'drive', label: 'ドライブ途中', emoji: '🚗' },
 ];
 
 export default function MyPageScreen() {
@@ -25,16 +42,46 @@ export default function MyPageScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { user, signOut } = useAuth();
+  const { visits } = useVisits();
 
-  const handleMenuPress = async (label: string) => {
-    if (label === 'ログアウト') {
+  const [genreModalVisible, setGenreModalVisible] = useState(false);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+
+  const spotCount = visits.length;
+  const areaCount = new Set(visits.map((v) => v.spots?.area).filter(Boolean)).size;
+
+  const openGenreModal = async () => {
+    try {
+      const raw = await SecureStore.getItemAsync(GENRE_PREFS_KEY);
+      setSelectedGenres(raw ? JSON.parse(raw) : []);
+    } catch {
+      setSelectedGenres([]);
+    }
+    setGenreModalVisible(true);
+  };
+
+  const saveGenres = async () => {
+    await SecureStore.setItemAsync(GENRE_PREFS_KEY, JSON.stringify(selectedGenres));
+    setGenreModalVisible(false);
+  };
+
+  const toggleGenre = (slug: string) => {
+    setSelectedGenres((prev) =>
+      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+    );
+  };
+
+  const handleMenuPress = async (action: string) => {
+    if (action === 'logout') {
       await signOut();
       router.replace('/auth');
+    } else if (action === 'genres') {
+      openGenreModal();
     }
   };
 
   const handleDevReset = () => {
-    Alert.alert('初回状態にリセット', 'オンボーディング・ジャンル設定をリセットしてオンボーディング画面に戻ります。', [
+    Alert.alert('初回状態にリセット', 'オンボーディング・ジャンル設定をリセットして戻ります。', [
       { text: 'キャンセル', style: 'cancel' },
       {
         text: 'リセット',
@@ -48,7 +95,7 @@ export default function MyPageScreen() {
     ]);
   };
 
-  const avatarLetter = user?.email?.[0].toUpperCase() ?? 'S';
+  const avatarLetter = user?.email?.[0].toUpperCase() ?? 'G';
   const displayName = user?.email ?? 'ゲスト';
 
   return (
@@ -75,18 +122,13 @@ export default function MyPageScreen() {
         {/* 統計 */}
         <View style={[styles.statsCard, { backgroundColor: colors.card }]}>
           <View style={styles.statItem}>
-            <ThemedText style={[styles.statNum, { color: colors.tint }]}>3</ThemedText>
+            <ThemedText style={[styles.statNum, { color: colors.tint }]}>{spotCount}</ThemedText>
             <ThemedText style={[styles.statLabel, { color: colors.subText }]}>訪問スポット</ThemedText>
           </View>
           <View style={[styles.statDivider, { backgroundColor: colors.subText + '30' }]} />
           <View style={styles.statItem}>
-            <ThemedText style={[styles.statNum, { color: colors.tint }]}>2</ThemedText>
+            <ThemedText style={[styles.statNum, { color: colors.tint }]}>{areaCount}</ThemedText>
             <ThemedText style={[styles.statLabel, { color: colors.subText }]}>エリア</ThemedText>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: colors.subText + '30' }]} />
-          <View style={styles.statItem}>
-            <ThemedText style={[styles.statNum, { color: colors.tint }]}>5</ThemedText>
-            <ThemedText style={[styles.statLabel, { color: colors.subText }]}>AIルート利用</ThemedText>
           </View>
         </View>
 
@@ -96,17 +138,15 @@ export default function MyPageScreen() {
             if (item.danger && !user) return null;
             return (
               <View key={item.label}>
-                <TouchableOpacity style={styles.menuRow} onPress={() => handleMenuPress(item.label)}>
+                <TouchableOpacity
+                  style={styles.menuRow}
+                  onPress={() => handleMenuPress(item.action)}>
                   <IconSymbol
                     name={item.icon}
                     size={20}
                     color={item.danger ? '#E05555' : colors.subText}
                   />
-                  <ThemedText
-                    style={[
-                      styles.menuLabel,
-                      item.danger && { color: '#E05555' },
-                    ]}>
+                  <ThemedText style={[styles.menuLabel, item.danger && { color: '#E05555' }]}>
                     {item.label}
                   </ThemedText>
                   {!item.danger && (
@@ -130,6 +170,63 @@ export default function MyPageScreen() {
           </ThemedText>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* ジャンル設定モーダル */}
+      <Modal
+        visible={genreModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setGenreModalVisible(false)}>
+        <View style={[styles.modal, { backgroundColor: colors.background }]}>
+          <View style={styles.modalHandle} />
+
+          <View style={styles.modalHeader}>
+            <ThemedText style={styles.modalTitle}>好みのジャンル</ThemedText>
+            <TouchableOpacity onPress={() => setGenreModalVisible(false)}>
+              <ThemedText style={[styles.modalCancel, { color: colors.subText }]}>キャンセル</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          <ThemedText style={[styles.modalSubtitle, { color: colors.subText }]}>
+            AIルート提案に反映されます
+          </ThemedText>
+
+          <View style={styles.chipsGrid}>
+            {GENRES.map((genre) => {
+              const isActive = selectedGenres.includes(genre.slug);
+              return (
+                <TouchableOpacity
+                  key={genre.slug}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: isActive ? colors.tint : colors.card,
+                      borderColor: isActive ? colors.tint : colors.subText + '40',
+                    },
+                  ]}
+                  onPress={() => toggleGenre(genre.slug)}
+                  activeOpacity={0.75}>
+                  <ThemedText style={styles.chipEmoji}>{genre.emoji}</ThemedText>
+                  <ThemedText style={[styles.chipLabel, { color: isActive ? '#fff' : colors.text }]}>
+                    {genre.label}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.saveBtn,
+              { backgroundColor: colors.tint, opacity: pressed ? 0.85 : 1 },
+            ]}
+            onPress={saveGenres}>
+            <ThemedText style={styles.saveBtnText}>
+              {selectedGenres.length > 0 ? `${selectedGenres.length}件選択して保存` : '選択なしで保存'}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -185,4 +282,43 @@ const styles = StyleSheet.create({
   version: { textAlign: 'center', fontSize: 12, marginTop: 24 },
   devBtn: { alignItems: 'center', marginTop: 12, paddingVertical: 8 },
   devBtnText: { fontSize: 12 },
+
+  // モーダル
+  modal: { flex: 1, paddingHorizontal: 24, paddingTop: 12 },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#ccc',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalTitle: { fontSize: 20, fontWeight: '700' },
+  modalCancel: { fontSize: 15 },
+  modalSubtitle: { fontSize: 14, marginBottom: 24 },
+  chipsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    minWidth: '45%',
+  },
+  chipEmoji: { fontSize: 18 },
+  chipLabel: { fontSize: 14, fontWeight: '600' },
+  saveBtn: {
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

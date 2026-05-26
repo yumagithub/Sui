@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yu-235715.sui"
     },
     "android": {
       "adaptiveIcon": {
@@ -39,7 +40,13 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "react-native-maps",
+        {
+          "googleMapsApiKey": ""
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
