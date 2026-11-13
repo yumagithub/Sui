@@ -13,7 +13,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="new" options={{ title: "条件をえらぶ" }} />
         <Stack.Screen name="picks" options={{ title: "この3つから" }} />
-        <Stack.Screen name="outing/[code]" options={{ title: "投票" }} />
+        <Stack.Screen name="o/[code]" options={{ title: "投票" }} />
       </Stack>
     </QueryClientProvider>
   );

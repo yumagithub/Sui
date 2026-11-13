@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
@@ -6,8 +6,12 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
+import { NameSheet } from "@/components/name-form";
 import { SpotCard } from "@/components/spot-card";
-import { fromParams, toPickArgs, type Conditions } from "@/lib/conditions";
+import { useEnsureSession } from "@/lib/auth";
+import { fromParams, toParams, toPickArgs, type Conditions } from "@/lib/conditions";
+import { myOutingsQueryKey } from "@/lib/outings";
+import { saveDisplayName } from "@/lib/prefs";
 import { supabase } from "@/lib/supabase";
 
 async function pickCandidates(conditions: Conditions, excludeIds: string[]) {
@@ -32,6 +36,29 @@ export default function Picks() {
     enabled: conditions !== null,
     staleTime: Infinity,
     retry: 1,
+  });
+
+  // 「この3つで友達に聞く」：名前を聞いて、おでかけを作って投票ページへ
+  const queryClient = useQueryClient();
+  const ensureSession = useEnsureSession();
+  const [nameOpen, setNameOpen] = useState(false);
+  const createOuting = useMutation({
+    mutationFn: async (displayName: string) => {
+      await ensureSession();
+      const { data, error } = await supabase.rpc("create_outing", {
+        spot_ids: (picks.data ?? []).map((s) => s.id),
+        display_name: displayName,
+        conditions: conditions ? toParams(conditions) : {},
+      });
+      if (error || !data?.[0]) throw new Error(error?.message ?? "作れませんでした");
+      await saveDisplayName(displayName);
+      return data[0];
+    },
+    onSuccess: (outing) => {
+      setNameOpen(false);
+      queryClient.invalidateQueries({ queryKey: myOutingsQueryKey });
+      router.push({ pathname: "/o/[code]", params: { code: outing.share_code, share: "1" } });
+    },
   });
 
   if (!conditions) {
@@ -90,18 +117,45 @@ export default function Picks() {
         )}
       </ScrollView>
 
-      <View
-        className="flex-row gap-3 border-t border-slate-100 bg-white px-5 pt-3"
-        style={{ paddingBottom: insets.bottom + 12 }}
-      >
-        <View className="flex-1">
-          <Button label="条件を変える" variant="secondary" onPress={() => (router.canGoBack() ? router.back() : router.replace("/new"))}
-          />
-        </View>
-        <View className="flex-1">
-          <Button label="引き直す" onPress={redraw} loading={picks.isFetching} disabled={spots.length === 0} />
+      <View className="gap-3 border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
+        <Button
+          label="この3つで友達に聞く"
+          onPress={() => {
+            createOuting.reset();
+            setNameOpen(true);
+          }}
+          disabled={spots.length !== 3 || picks.isFetching}
+        />
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Button
+              label="条件を変える"
+              variant="secondary"
+              onPress={() => (router.canGoBack() ? router.back() : router.replace("/new"))}
+            />
+          </View>
+          <View className="flex-1">
+            <Button
+              label="引き直す"
+              variant="secondary"
+              onPress={redraw}
+              loading={picks.isFetching}
+              disabled={spots.length === 0}
+            />
+          </View>
         </View>
       </View>
+
+      <NameSheet
+        visible={nameOpen}
+        onClose={() => setNameOpen(false)}
+        title="あなたのなまえは？"
+        description="投票ページで、みんなに表示されます"
+        submitLabel="投票ページを作る"
+        loading={createOuting.isPending}
+        error={createOuting.error ? "うまく作れなかった。もう一回試してね" : null}
+        onSubmit={(name) => createOuting.mutate(name)}
+      />
     </View>
   );
 }

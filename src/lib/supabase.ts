@@ -1,4 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient, processLock } from "@supabase/supabase-js";
+import { AppState, Platform } from "react-native";
 
 import type { Database } from "./database.types";
 
@@ -12,11 +14,24 @@ if (!url || !publishableKey) {
   );
 }
 
-// 匿名ログインはステップ4で入れる。今はログインなしで読むだけ。
+// Web のサーバー側描画（SSR）ではブラウザの保存先がないので、ログイン状態は持たない
+const isServer = Platform.OS === "web" && typeof window === "undefined";
+
 export const supabase = createClient<Database>(url, publishableKey, {
   auth: {
-    persistSession: false,
-    autoRefreshToken: false,
+    // 匿名ログインの状態を端末に残す（アプリは AsyncStorage、Web は localStorage）
+    storage: isServer ? undefined : AsyncStorage,
+    persistSession: !isServer,
+    autoRefreshToken: !isServer,
     detectSessionInUrl: false,
+    ...(Platform.OS === "web" ? {} : { lock: processLock }),
   },
 });
+
+// アプリが前面にあるあいだだけトークンを自動更新する（Supabase の React Native 向けの推奨）
+if (Platform.OS !== "web") {
+  AppState.addEventListener("change", (state) => {
+    if (state === "active") supabase.auth.startAutoRefresh();
+    else supabase.auth.stopAutoRefresh();
+  });
+}

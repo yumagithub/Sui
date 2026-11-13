@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
-import { useMemo, type ComponentProps } from "react";
+import { useMemo, type ComponentProps, type ReactNode } from "react";
 import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, FadeOut, useReducedMotion } from "react-native-reanimated";
 
@@ -8,6 +8,23 @@ import { CARD_ENTER_MS, CARD_EXIT_MS, CARD_STAGGER_MS, EASE_OUT } from "@/consta
 import type { Database } from "@/lib/database.types";
 
 export type Candidate = Database["public"]["Functions"]["pick_candidates"]["Returns"][number];
+
+/** カードに出すのに必要な値（抽選結果でも、おでかけの候補でも使える） */
+// （RPC の生成型は null を含まないが、実際の値は null になりうるので、ここで明示する）
+export type SpotSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string;
+  municipality: string;
+  is_indoor: boolean;
+  has_parking: boolean | null;
+  car_free_ok: boolean | null;
+  budget_yen: number | null;
+  photo_url: string | null;
+  relaxed?: boolean;
+  distance_m?: number | null;
+};
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -39,12 +56,16 @@ function Badge({ icon, label }: { icon: IconName; label: string }) {
 }
 
 type Props = {
-  spot: Candidate;
+  spot: SpotSummary;
   index: number;
-  showDistance: boolean;
+  showDistance?: boolean;
+  /** 投票画面で、自分が選んだカードを目立たせる */
+  selected?: boolean;
+  /** カードの下に足す中身（票数など） */
+  children?: ReactNode;
 };
 
-export function SpotCard({ spot, index, showDistance }: Props) {
+export function SpotCard({ spot, index, showDistance = false, selected = false, children }: Props) {
   const reduceMotion = useReducedMotion();
   const category = CATEGORY[spot.category] ?? CATEGORY.play;
 
@@ -60,7 +81,11 @@ export function SpotCard({ spot, index, showDistance }: Props) {
 
   return (
     <Animated.View entering={entering} exiting={FadeOut.duration(CARD_EXIT_MS)}>
-      <View className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+      <View
+        className={`overflow-hidden rounded-3xl border-2 bg-white shadow-sm ${
+          selected ? "border-teal-600" : "border-transparent"
+        }`}
+      >
         {spot.photo_url ? (
           <Image
             source={{ uri: spot.photo_url }}
@@ -99,8 +124,11 @@ export function SpotCard({ spot, index, showDistance }: Props) {
             {spot.has_parking ? <Badge icon="car-outline" label="駐車場" /> : null}
             {spot.is_indoor ? <Badge icon="umbrella-outline" label="屋内" /> : null}
             {spot.car_free_ok ? <Badge icon="bus-outline" label="車なしOK" /> : null}
-            {showDistance ? <Badge icon="navigate-outline" label={distanceLabel(spot.distance_m)} /> : null}
+            {showDistance && spot.distance_m != null ? (
+              <Badge icon="navigate-outline" label={distanceLabel(spot.distance_m)} />
+            ) : null}
           </View>
+          {children}
         </View>
       </View>
     </Animated.View>
