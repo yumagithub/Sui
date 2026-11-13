@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Platform, ScrollView, Text, View } from "react-native";
@@ -5,14 +6,20 @@ import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
+import { DecideSheet } from "@/components/decide-sheet";
+import { DecidedView } from "@/components/decided-view";
 import { NameForm } from "@/components/name-form";
 import { PressableScale } from "@/components/pressable-scale";
 import { SpotCard, type SpotSummary } from "@/components/spot-card";
 import { CSS_EASE_OUT } from "@/constants/motion";
 import { useEnsureSession, useMe } from "@/lib/auth";
 import {
+  canAskFeedback,
+  useAnswerFeedback,
   useCastVote,
+  useDecideOuting,
   useJoinOuting,
+  useMyFeedback,
   useMembers,
   useOuting,
   useOutingRealtime,
@@ -28,7 +35,19 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 /** 票数のバーと、投票した人の名前 */
-function Tally({ votes, members, me, total }: { votes: Vote[]; members: Member[]; me: string; total: number }) {
+function Tally({
+  votes,
+  members,
+  me,
+  total,
+  isTop,
+}: {
+  votes: Vote[];
+  members: Member[];
+  me: string;
+  total: number;
+  isTop: boolean;
+}) {
   const names = votes.map((v) =>
     v.user_id === me ? "あなた" : (members.find((m) => m.user_id === v.user_id)?.display_name ?? "だれか"),
   );
@@ -57,6 +76,11 @@ function Tally({ votes, members, me, total }: { votes: Vote[]; members: Member[]
         </View>
         <Text className="w-10 text-right text-sm font-bold text-slate-700">{votes.length}票</Text>
       </View>
+      {isTop ? (
+        <Text className="self-start rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
+          いちばん人気
+        </Text>
+      ) : null}
       {names.length > 0 ? (
         <Text className="text-xs text-slate-500" numberOfLines={2}>
           {names.join("・")}
@@ -88,6 +112,26 @@ export default function OutingVote() {
   const members = useMembers(outingId);
   const castVote = useCastVote(outingId, me.data);
   useOutingRealtime(outingId);
+
+  // 決定（作った人だけ）
+  const decide = useDecideOuting(code);
+  const [decideOpen, setDecideOpen] = useState(false);
+  const decided = outing.data?.status === "decided";
+
+  // 「実際に行った？」は決定から3時間たってから
+  const askFeedback = decided && canAskFeedback(outing.data?.decided_at);
+  const myFeedback = useMyFeedback(outingId, me.data, askFeedback);
+  const answerFeedback = useAnswerFeedback(outingId, me.data);
+
+  // 開いている間に決定が届いたら、スマホを1回だけ振動させる（もともと決定済みなら鳴らさない）
+  const previousStatus = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const status = outing.data?.status;
+    if (previousStatus.current === "voting" && status === "decided" && Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    previousStatus.current = status;
+  }, [outing.data?.status]);
 
   // 送る
   const [shareNote, setShareNote] = useState<string | null>(null);
@@ -180,6 +224,36 @@ export default function OutingVote() {
   const allVotes = votes.data ?? [];
   const myVote = allVotes.find((v) => v.user_id === myId)?.spot_id;
   const voting = outing.data.status === "voting";
+  const isCreator = outing.data.created_by === myId;
+  const counts: Record<string, number> = {};
+  for (const v of allVotes) counts[v.spot_id] = (counts[v.spot_id] ?? 0) + 1;
+  const maxCount = Math.max(0, ...Object.values(counts));
+  const nameOf = (userId: string) =>
+    userId === myId ? "あなた" : (members.data?.find((m) => m.user_id === userId)?.display_name ?? "だれか");
+
+  const decidedSpot = decided ? outing.data.candidates.find((c) => c.id === outing.data?.decided_spot_id) : undefined;
+  if (decidedSpot) {
+    return (
+      <View className="flex-1 bg-slate-50">
+        <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="px-5 pb-8 pt-4">
+          <DecidedView
+            spot={decidedSpot}
+            voterNames={allVotes.filter((v) => v.spot_id === decidedSpot.id).map((v) => nameOf(v.user_id))}
+            feedback={
+              askFeedback
+                ? {
+                    answer: myFeedback.data,
+                    loading: answerFeedback.isPending,
+                    error: answerFeedback.isError,
+                    onAnswer: (went) => answerFeedback.mutate(went),
+                  }
+                : null
+            }
+          />
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -209,7 +283,13 @@ export default function OutingVote() {
               accessibilityLabel={`${spot.name}（${spotVotes.length}票）`}
             >
               <SpotCard spot={spot} index={i} selected={selected}>
-                <Tally votes={spotVotes} members={members.data ?? []} me={myId} total={allVotes.length} />
+                <Tally
+                  votes={spotVotes}
+                  members={members.data ?? []}
+                  me={myId}
+                  total={allVotes.length}
+                  isTop={maxCount > 0 && spotVotes.length === maxCount}
+                />
               </SpotCard>
             </PressableScale>
           );
@@ -224,8 +304,33 @@ export default function OutingVote() {
             {shareNote}
           </Text>
         ) : null}
-        <Button label="友達に送る" variant={share === "1" ? "primary" : "secondary"} onPress={share_} />
+        {isCreator && voting ? (
+          <Button
+            label="ここに決定！"
+            onPress={() => {
+              decide.reset();
+              setDecideOpen(true);
+            }}
+          />
+        ) : null}
+        <Button
+          label="友達に送る"
+          variant={share === "1" && !(isCreator && allVotes.length > 0) ? "primary" : "secondary"}
+          onPress={share_}
+        />
       </View>
+
+      {isCreator && voting ? (
+        <DecideSheet
+          visible={decideOpen}
+          candidates={outing.data.candidates}
+          counts={counts}
+          loading={decide.isPending}
+          error={decide.error ? "決められなかった。もう一回試してね" : null}
+          onConfirm={(spotId) => decide.mutate(spotId, { onSuccess: () => setDecideOpen(false) })}
+          onClose={() => setDecideOpen(false)}
+        />
+      ) : null}
     </View>
   );
 }

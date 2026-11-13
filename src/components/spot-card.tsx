@@ -24,6 +24,10 @@ export type SpotSummary = {
   photo_url: string | null;
   relaxed?: boolean;
   distance_m?: number | null;
+  /** 決定画面で Googleマップを開くのに使う */
+  google_maps_url?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 type IconName = ComponentProps<typeof Ionicons>["name"];

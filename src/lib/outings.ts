@@ -11,7 +11,14 @@ const votesKey = (outingId: string) => ["votes", outingId] as const;
 const membersKey = (outingId: string) => ["members", outingId] as const;
 
 const SPOT_COLUMNS =
-  "id, name, description, category, municipality, is_indoor, has_parking, car_free_ok, budget_yen, photo_url";
+  "id, name, description, category, municipality, is_indoor, has_parking, car_free_ok, budget_yen, photo_url, google_maps_url, lat, lng";
+
+/** 決定から何時間たったら「実際に行った？」を聞くか（DB の RLS も3時間） */
+export const FEEDBACK_AFTER_MS = 3 * 60 * 60 * 1000;
+
+export function canAskFeedback(decidedAt: string | null | undefined, now = Date.now()) {
+  return !!decidedAt && now - new Date(decidedAt).getTime() >= FEEDBACK_AFTER_MS;
+}
 
 // outings と outing_candidates は外部キーが2本ある（候補→おでかけ / 決定→候補）ので、どちらを辿るか指定する
 const CANDIDATES = "outing_candidates!outing_candidates_outing_id_fkey";
@@ -22,6 +29,8 @@ export type Outing = {
   status: string;
   created_by: string;
   created_at: string;
+  decided_spot_id: string | null;
+  decided_at: string | null;
   candidates: SpotSummary[];
 };
 
@@ -36,7 +45,9 @@ export function useOuting(code: string, me: string | null | undefined) {
     queryFn: async (): Promise<Outing | null> => {
       const { data, error } = await supabase
         .from("outings")
-        .select(`id, share_code, status, created_by, created_at, ${CANDIDATES}(position, spot:spots(${SPOT_COLUMNS}))`)
+        .select(
+          `id, share_code, status, created_by, created_at, decided_spot_id, decided_at, ${CANDIDATES}(position, spot:spots(${SPOT_COLUMNS}))`,
+        )
         .eq("share_code", code)
         .maybeSingle();
       if (error) throw new Error(error.message);
@@ -136,11 +147,20 @@ export function useOutingRealtime(outingId: string | undefined) {
       // 新しく参加した人の票が届いたときに名前を出せるよう、参加者も読み直す
       queryClient.invalidateQueries({ queryKey: membersKey(outingId) });
     };
+    // 決定されたら、おでかけ（状態・決定したスポット）を読み直す
+    const refreshOuting = () => {
+      queryClient.invalidateQueries({ queryKey: ["outing"] });
+      queryClient.invalidateQueries({ queryKey: myOutingsQueryKey });
+    };
     const channel = supabase
       .channel(`outing-votes-${outingId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `outing_id=eq.${outingId}` }, refresh)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "outings", filter: `id=eq.${outingId}` }, refreshOuting)
       .on("system", {}, (message: { extension?: string; status?: string }) => {
-        if (message.extension === "postgres_changes" && message.status === "ok") refresh();
+        if (message.extension === "postgres_changes" && message.status === "ok") {
+          refresh();
+          refreshOuting();
+        }
       })
       .subscribe();
     return () => {
@@ -155,6 +175,10 @@ export type MyOuting = {
   status: string;
   created_at: string;
   spotNames: string[];
+  /** 決定したスポットの名前（まだなら null） */
+  decidedName: string | null;
+  /** 決定から3時間たっていて、まだ「行った？」に答えていない */
+  needsFeedback: boolean;
 };
 
 /** 自分が参加したおでかけ（新しい順） */
@@ -165,20 +189,78 @@ export function useMyOutings(me: string | null | undefined) {
     queryFn: async (): Promise<MyOuting[]> => {
       const { data, error } = await supabase
         .from("outing_members")
-        .select(`joined_at, outing:outings!inner(id, share_code, status, created_at, ${CANDIDATES}(position, spot:spots(name)))`)
+        .select(
+          `joined_at, visit_feedback(went), outing:outings!inner(id, share_code, status, created_at, decided_spot_id, decided_at, ${CANDIDATES}(position, spot:spots(id, name)))`,
+        )
         .eq("user_id", me!)
         .order("joined_at", { ascending: false })
         .limit(20);
       if (error) throw new Error(error.message);
-      return data.map(({ outing }) => ({
-        id: outing.id,
-        share_code: outing.share_code,
-        status: outing.status,
-        created_at: outing.created_at,
-        spotNames: [...outing.outing_candidates]
-          .sort((a, b) => a.position - b.position)
-          .map((c) => c.spot?.name ?? "（非公開のスポット）"),
-      }));
+      return data.map(({ outing, visit_feedback }) => {
+        const candidates = [...outing.outing_candidates].sort((a, b) => a.position - b.position);
+        const decided = candidates.find((c) => c.spot?.id === outing.decided_spot_id);
+        return {
+          id: outing.id,
+          share_code: outing.share_code,
+          status: outing.status,
+          created_at: outing.created_at,
+          spotNames: candidates.map((c) => c.spot?.name ?? "（非公開のスポット）"),
+          decidedName: decided?.spot?.name ?? null,
+          needsFeedback: canAskFeedback(outing.decided_at) && !visit_feedback,
+        };
+      });
+    },
+  });
+}
+
+/** 決定する（作った人だけ。取り消しはできない） */
+export function useDecideOuting(code: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (spotId: string) => {
+      const { error } = await supabase.rpc("decide_outing", { share_code: code, spot_id: spotId });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["outing", code] });
+      queryClient.invalidateQueries({ queryKey: myOutingsQueryKey });
+    },
+  });
+}
+
+const feedbackKey = (outingId: string, me: string) => ["feedback", outingId, me] as const;
+
+/** 自分の「実際に行った？」の答え（未回答なら null） */
+export function useMyFeedback(outingId: string | undefined, me: string | null | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: feedbackKey(outingId ?? "", me ?? ""),
+    enabled: enabled && !!outingId && !!me,
+    queryFn: async (): Promise<boolean | null> => {
+      const { data, error } = await supabase
+        .from("visit_feedback")
+        .select("went")
+        .eq("outing_id", outingId!)
+        .eq("user_id", me!)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data?.went ?? null;
+    },
+  });
+}
+
+export function useAnswerFeedback(outingId: string | undefined, me: string | null | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (went: boolean) => {
+      const { error } = await supabase
+        .from("visit_feedback")
+        .upsert({ outing_id: outingId!, user_id: me!, went }, { onConflict: "outing_id,user_id" });
+      if (error) throw new Error(error.message);
+      return went;
+    },
+    onSuccess: (went) => {
+      queryClient.setQueryData(feedbackKey(outingId!, me!), went);
+      queryClient.invalidateQueries({ queryKey: myOutingsQueryKey });
     },
   });
 }

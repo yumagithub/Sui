@@ -18,7 +18,9 @@ function OutingRow({ outing }: { outing: MyOuting }) {
     <PressableScale
       onPress={() => router.push({ pathname: "/o/[code]", params: { code: outing.share_code } })}
       accessibilityRole="button"
-      accessibilityLabel={`${formatDate(outing.created_at)}のおでかけ：${outing.spotNames.join("、")}`}
+      accessibilityLabel={`${formatDate(outing.created_at)}のおでかけ：${
+        outing.decidedName ? `${outing.decidedName}に決定` : outing.spotNames.join("、")
+      }${outing.needsFeedback ? "（実際に行ったか、まだ答えていません）" : ""}`}
     >
       <View className="gap-1.5 rounded-2xl bg-white p-4">
         <View className="flex-row items-center gap-2">
@@ -30,9 +32,14 @@ function OutingRow({ outing }: { outing: MyOuting }) {
             {voting ? "投票中" : "決定"}
           </Text>
           <Text className="text-xs text-slate-400">{formatDate(outing.created_at)}</Text>
+          {outing.needsFeedback ? (
+            <Text className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
+              行った？
+            </Text>
+          ) : null}
         </View>
         <Text className="text-[15px] font-semibold text-slate-800" numberOfLines={2}>
-          {outing.spotNames.join(" ／ ")}
+          {outing.decidedName ? `決定：${outing.decidedName}` : outing.spotNames.join(" ／ ")}
         </Text>
       </View>
     </PressableScale>
