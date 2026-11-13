@@ -8,16 +8,18 @@ import type { Database } from "./database.types";
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const publishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-if (!url || !publishableKey) {
+// Web のサーバー側描画（SSR）ではブラウザの保存先がないので、ログイン状態は持たない
+const isServer = Platform.OS === "web" && typeof window === "undefined";
+
+// サーバー側描画では Supabase を呼ばない（データの取得はブラウザで行う）。
+// 公開先（EAS Hosting）のサーバーには環境変数がないので、そこでは止めずに仮の値で作っておく。
+if ((!url || !publishableKey) && !isServer) {
   throw new Error(
     "EXPO_PUBLIC_SUPABASE_URL と EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY を .env.local に設定してください",
   );
 }
 
-// Web のサーバー側描画（SSR）ではブラウザの保存先がないので、ログイン状態は持たない
-const isServer = Platform.OS === "web" && typeof window === "undefined";
-
-export const supabase = createClient<Database>(url, publishableKey, {
+export const supabase = createClient<Database>(url ?? "http://localhost", publishableKey ?? "server-render", {
   auth: {
     // 匿名ログインの状態を端末に残す（アプリは AsyncStorage、Web は localStorage）
     storage: isServer ? undefined : AsyncStorage,

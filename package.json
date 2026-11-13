@@ -48,7 +48,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "import-spots": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=.admin-secrets.local scripts/import-spots.ts"
+    "import-spots": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=.admin-secrets.local scripts/import-spots.ts",
+    "export:web": "EXPO_PUBLIC_WEB_URL=https://sui-okinawa.expo.app expo export -p web --clear",
+    "deploy:web": "npm run export:web && npx eas-cli@latest deploy --prod"
   },
   "private": true
 }
