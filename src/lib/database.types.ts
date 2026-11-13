@@ -241,6 +241,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_outing: {
+        Args: { conditions?: Json; display_name: string; spot_ids: string[] }
+        Returns: {
+          id: string
+          share_code: string
+        }[]
+      }
       join_outing: {
         Args: { display_name: string; share_code: string }
         Returns: string
