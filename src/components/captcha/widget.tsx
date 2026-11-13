@@ -33,9 +33,15 @@ export function CaptchaWidget({ siteKey, onToken, onError, onInteractive }: Capt
       onMessage={handleMessage}
       onError={() => onError("load")}
       onHttpError={() => onError("load")}
-      originWhitelist={["https://*"]}
+      // Turnstile は about:srcdoc の枠を中で使うので、許可しないと動かない（Cloudflare のモバイル向けの説明より）
+      originWhitelist={["https://*", "about:srcdoc"]}
       javaScriptEnabled
       domStorageEnabled
+      // Cloudflare がすすめる設定：Cookie を保てるようにする
+      sharedCookiesEnabled
+      thirdPartyCookiesEnabled
+      allowsInlineMediaPlayback
+      mediaPlaybackRequiresUserAction={false}
       scrollEnabled={false}
       bounces={false}
       style={{ width: WIDGET_WIDTH, height: WIDGET_HEIGHT, backgroundColor: "transparent" }}

@@ -77,7 +77,8 @@ type SheetProps = {
 
 function CaptchaSheet({ siteKey, onToken, onCancel }: SheetProps) {
   const [interactive, setInteractive] = useState(false);
-  const [failed, setFailed] = useState(false);
+  // うまくいかなかったときのコード（問い合わせのときに分かるよう小さく出す）
+  const [failed, setFailed] = useState<string | null>(null);
   // 「もう一回」で Turnstile を最初から出し直す
   const [attempt, setAttempt] = useState(0);
 
@@ -88,21 +89,22 @@ function CaptchaSheet({ siteKey, onToken, onCancel }: SheetProps) {
           <View className="items-center gap-1">
             <Text className="text-lg font-bold text-slate-900">ちょっと確認するね</Text>
             <Text className="text-center text-sm text-slate-500">
-              {failed
+              {failed !== null
                 ? "うまく確認できなかった…"
                 : interactive
                   ? "チェックを入れてね"
                   : "ロボットじゃないか、自動でチェックしてるよ"}
             </Text>
+            {failed !== null ? <Text className="text-xs text-slate-400">コード {failed}</Text> : null}
           </View>
 
-          {failed ? (
+          {failed !== null ? (
             <View className="w-full">
               <Button
                 label="もう一回"
                 variant="secondary"
                 onPress={() => {
-                  setFailed(false);
+                  setFailed(null);
                   setInteractive(false);
                   setAttempt((n) => n + 1);
                 }}
@@ -116,7 +118,7 @@ function CaptchaSheet({ siteKey, onToken, onCancel }: SheetProps) {
                 onToken={onToken}
                 onError={(code) => {
                   if (__DEV__) console.warn(`Turnstile のエラー: ${code}`);
-                  setFailed(true);
+                  setFailed(code);
                 }}
                 onInteractive={() => setInteractive(true)}
               />
