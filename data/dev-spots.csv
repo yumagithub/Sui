@@ -1,15 +1,18 @@
 name,description,category,municipality,lat,lng,is_indoor,has_parking,car_free_ok,budget_yen,hours_note,photo_url,google_maps_url,tags,is_published
-美浜アメリカンビレッジ,,play,北谷町,26.3164,127.7570,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E6%B5%9C%E3%82%A2%E3%83%A1%E3%83%AA%E3%82%AB%E3%83%B3%E3%83%93%E3%83%AC%E3%83%83%E3%82%B8%20%E5%8C%97%E8%B0%B7%E7%94%BA,,true
-サンセットビーチ,,view,北谷町,26.3148,127.7546,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E3%82%B5%E3%83%B3%E3%82%BB%E3%83%83%E3%83%88%E3%83%93%E3%83%BC%E3%83%81%20%E5%8C%97%E8%B0%B7%E7%94%BA,,true
-宮城海岸,,nature,北谷町,26.3335,127.7440,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E5%AE%AE%E5%9F%8E%E6%B5%B7%E5%B2%B8%20%E5%8C%97%E8%B0%B7%E7%94%BA,,true
-宜野湾トロピカルビーチ,,nature,宜野湾市,26.2797,127.7363,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E5%AE%9C%E9%87%8E%E6%B9%BE%E3%83%88%E3%83%AD%E3%83%94%E3%82%AB%E3%83%AB%E3%83%93%E3%83%BC%E3%83%81%20%E5%AE%9C%E9%87%8E%E6%B9%BE%E5%B8%82,,true
-嘉数高台公園,,view,宜野湾市,26.2648,127.7412,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E5%98%89%E6%95%B0%E9%AB%98%E5%8F%B0%E5%85%AC%E5%9C%92%20%E5%AE%9C%E9%87%8E%E6%B9%BE%E5%B8%82,,true
-イオンモール沖縄ライカム,,play,北中城村,26.3127,127.7948,true,,,,,,https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%AA%E3%83%B3%E3%83%A2%E3%83%BC%E3%83%AB%E6%B2%96%E7%B8%84%E3%83%A9%E3%82%A4%E3%82%AB%E3%83%A0%20%E5%8C%97%E4%B8%AD%E5%9F%8E%E6%9D%91,,true
-中城城跡,,view,北中城村,26.2843,127.8009,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9F%8E%E5%9F%8E%E8%B7%A1%20%E5%8C%97%E4%B8%AD%E5%9F%8E%E6%9D%91,,true
-吉の浦公園,,nature,中城村,26.2560,127.7960,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E5%90%89%E3%81%AE%E6%B5%A6%E5%85%AC%E5%9C%92%20%E4%B8%AD%E5%9F%8E%E6%9D%91,,true
-沖縄こどもの国,,play,沖縄市,26.3374,127.8130,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E6%B2%96%E7%B8%84%E3%81%93%E3%81%A9%E3%82%82%E3%81%AE%E5%9B%BD%20%E6%B2%96%E7%B8%84%E5%B8%82,,true
-コザゲート通り,,play,沖縄市,26.3355,127.8010,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%82%B6%E3%82%B2%E3%83%BC%E3%83%88%E9%80%9A%E3%82%8A%20%E6%B2%96%E7%B8%84%E5%B8%82,,true
-勝連城跡,,view,うるま市,26.3297,127.8790,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E5%8B%9D%E9%80%A3%E5%9F%8E%E8%B7%A1%20%E3%81%86%E3%82%8B%E3%81%BE%E5%B8%82,,true
-海の駅あやはし館,,view,うるま市,26.3298,127.9175,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E3%81%AE%E9%A7%85%E3%81%82%E3%82%84%E3%81%AF%E3%81%97%E9%A4%A8%20%E3%81%86%E3%82%8B%E3%81%BE%E5%B8%82,,true
-伊計ビーチ,,nature,うるま市,26.3920,127.9940,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E4%BC%8A%E8%A8%88%E3%83%93%E3%83%BC%E3%83%81%20%E3%81%86%E3%82%8B%E3%81%BE%E5%B8%82,,true
-西原きらきらビーチ,,nature,西原町,26.2240,127.7740,false,,,,,,https://www.google.com/maps/search/?api=1&query=%E8%A5%BF%E5%8E%9F%E3%81%8D%E3%82%89%E3%81%8D%E3%82%89%E3%83%93%E3%83%BC%E3%83%81%20%E8%A5%BF%E5%8E%9F%E7%94%BA,,true
+美浜アメリカンビレッジ,,play,北谷町,26.3164,127.7570,false,true,true,2000,,,https://www.google.com/maps/search/?api=1&query=%E7%BE%8E%E6%B5%9C%E3%82%A2%E3%83%A1%E3%83%AA%E3%82%AB%E3%83%B3%E3%83%93%E3%83%AC%E3%83%83%E3%82%B8%20%E5%8C%97%E8%B0%B7%E7%94%BA,,true
+サンセットビーチ,,view,北谷町,26.3148,127.7546,false,true,true,0,,,https://www.google.com/maps/search/?api=1&query=%E3%82%B5%E3%83%B3%E3%82%BB%E3%83%83%E3%83%88%E3%83%93%E3%83%BC%E3%83%81%20%E5%8C%97%E8%B0%B7%E7%94%BA,,true
+宮城海岸,,nature,北谷町,26.3335,127.7440,false,false,false,0,,,https://www.google.com/maps/search/?api=1&query=%E5%AE%AE%E5%9F%8E%E6%B5%B7%E5%B2%B8%20%E5%8C%97%E8%B0%B7%E7%94%BA,,true
+宜野湾トロピカルビーチ,,nature,宜野湾市,26.2797,127.7363,false,true,true,0,,,https://www.google.com/maps/search/?api=1&query=%E5%AE%9C%E9%87%8E%E6%B9%BE%E3%83%88%E3%83%AD%E3%83%94%E3%82%AB%E3%83%AB%E3%83%93%E3%83%BC%E3%83%81%20%E5%AE%9C%E9%87%8E%E6%B9%BE%E5%B8%82,,true
+嘉数高台公園,,view,宜野湾市,26.2648,127.7412,false,true,true,0,,,https://www.google.com/maps/search/?api=1&query=%E5%98%89%E6%95%B0%E9%AB%98%E5%8F%B0%E5%85%AC%E5%9C%92%20%E5%AE%9C%E9%87%8E%E6%B9%BE%E5%B8%82,,true
+イオンモール沖縄ライカム,,play,北中城村,26.3127,127.7948,true,true,true,3000,,,https://www.google.com/maps/search/?api=1&query=%E3%82%A4%E3%82%AA%E3%83%B3%E3%83%A2%E3%83%BC%E3%83%AB%E6%B2%96%E7%B8%84%E3%83%A9%E3%82%A4%E3%82%AB%E3%83%A0%20%E5%8C%97%E4%B8%AD%E5%9F%8E%E6%9D%91,,true
+中城城跡,,view,北中城村,26.2843,127.8009,false,true,false,400,,,https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%9F%8E%E5%9F%8E%E8%B7%A1%20%E5%8C%97%E4%B8%AD%E5%9F%8E%E6%9D%91,,true
+吉の浦公園,,nature,中城村,26.2560,127.7960,false,true,false,0,,,https://www.google.com/maps/search/?api=1&query=%E5%90%89%E3%81%AE%E6%B5%A6%E5%85%AC%E5%9C%92%20%E4%B8%AD%E5%9F%8E%E6%9D%91,,true
+沖縄こどもの国,,play,沖縄市,26.3374,127.8130,false,true,true,500,,,https://www.google.com/maps/search/?api=1&query=%E6%B2%96%E7%B8%84%E3%81%93%E3%81%A9%E3%82%82%E3%81%AE%E5%9B%BD%20%E6%B2%96%E7%B8%84%E5%B8%82,,true
+コザゲート通り,,play,沖縄市,26.3355,127.8010,false,true,true,2000,,,https://www.google.com/maps/search/?api=1&query=%E3%82%B3%E3%82%B6%E3%82%B2%E3%83%BC%E3%83%88%E9%80%9A%E3%82%8A%20%E6%B2%96%E7%B8%84%E5%B8%82,,true
+勝連城跡,,view,うるま市,26.3297,127.8790,false,true,false,600,,,https://www.google.com/maps/search/?api=1&query=%E5%8B%9D%E9%80%A3%E5%9F%8E%E8%B7%A1%20%E3%81%86%E3%82%8B%E3%81%BE%E5%B8%82,,true
+海の駅あやはし館,,view,うるま市,26.3298,127.9175,true,true,false,1000,,,https://www.google.com/maps/search/?api=1&query=%E6%B5%B7%E3%81%AE%E9%A7%85%E3%81%82%E3%82%84%E3%81%AF%E3%81%97%E9%A4%A8%20%E3%81%86%E3%82%8B%E3%81%BE%E5%B8%82,,true
+伊計ビーチ,,nature,うるま市,26.3920,127.9940,false,true,false,1000,,,https://www.google.com/maps/search/?api=1&query=%E4%BC%8A%E8%A8%88%E3%83%93%E3%83%BC%E3%83%81%20%E3%81%86%E3%82%8B%E3%81%BE%E5%B8%82,,true
+西原きらきらビーチ,,nature,西原町,26.2240,127.7740,false,true,false,0,,,https://www.google.com/maps/search/?api=1&query=%E8%A5%BF%E5%8E%9F%E3%81%8D%E3%82%89%E3%81%8D%E3%82%89%E3%83%93%E3%83%BC%E3%83%81%20%E8%A5%BF%E5%8E%9F%E7%94%BA,,true
+【テスト】ごはん屋 北谷,開発用のダミーです。実在しません。説明が3行に収まるかを確かめるため、少し長めの文章を入れています。ここまで来たら4行目です。,food,北谷町,26.3180,127.7600,true,true,true,1200,,,,,true
+【テスト】カフェ 宜野湾,開発用のダミーです。実在しません。,cafe,宜野湾市,26.2780,127.7400,true,false,true,800,,,,,true
+【テスト】カフェ うるま,開発用のダミーです。実在しません。,cafe,うるま市,26.3750,127.8550,true,true,false,1500,,,,,true

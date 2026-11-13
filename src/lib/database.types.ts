@@ -245,6 +245,37 @@ export type Database = {
         Args: { display_name: string; share_code: string }
         Returns: string
       }
+      pick_candidates: {
+        Args: {
+          categories?: string[]
+          exclude_ids?: string[]
+          has_car: boolean
+          max_budget_yen?: number
+          municipality?: string
+          origin_lat: number
+          origin_lng: number
+          prefer_indoor?: boolean
+        }
+        Returns: {
+          budget_yen: number
+          car_free_ok: boolean
+          category: string
+          description: string
+          distance_m: number
+          google_maps_url: string
+          has_parking: boolean
+          hours_note: string
+          id: string
+          is_indoor: boolean
+          lat: number
+          lng: number
+          municipality: string
+          name: string
+          photo_url: string
+          relaxed: boolean
+          tags: string[]
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
