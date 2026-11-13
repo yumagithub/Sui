@@ -44,3 +44,7 @@ example
 
 # supabase cli
 supabase/.temp/
+
+# 管理用の秘密キー（scripts/ からだけ読む）。名前に env を含めないこと：
+# Expo は開発中 .env* をアプリのバンドルに取り込むことがある
+.admin-secrets.local

@@ -2,10 +2,10 @@
  * スポットの CSV（data/spots_template.csv と同じ列）を spots テーブルに取り込む。
  *
  * 使い方:
- *   node --experimental-strip-types --env-file=.env.script.local scripts/import-spots.ts data/dev-spots.csv
+ *   node --experimental-strip-types --env-file=.admin-secrets.local scripts/import-spots.ts data/dev-spots.csv
  *   node --experimental-strip-types scripts/import-spots.ts data/dev-spots.csv --dry-run   # チェックだけ
  *
- * .env.script.local（git には入らない。Expo も読み込まない）:
+ * .admin-secrets.local（git には入らない。名前に env を含めないこと＝Expo がアプリに取り込まないように）:
  *   SUPABASE_URL=https://xxxx.supabase.co
  *   SUPABASE_SECRET_KEY=sb_secret_...   # または旧形式の service_role キー
  *
@@ -243,7 +243,7 @@ async function main() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const secretKey = process.env.SUPABASE_SECRET_KEY;
   if (!supabaseUrl || !secretKey) {
-    fail("SUPABASE_URL と SUPABASE_SECRET_KEY を環境変数で渡してください（--env-file=.env.script.local）");
+    fail("SUPABASE_URL と SUPABASE_SECRET_KEY を環境変数で渡してください（--env-file=.admin-secrets.local）");
   }
   if (secretKey.startsWith("sb_publishable_")) {
     fail("SUPABASE_SECRET_KEY に公開キーが入っています。秘密キー（sb_secret_...）を使ってください");
