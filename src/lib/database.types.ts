@@ -81,6 +81,7 @@ export type Database = {
           conditions: Json
           created_at: string
           created_by: string
+          decided_at: string | null
           decided_spot_id: string | null
           id: string
           share_code: string
@@ -90,6 +91,7 @@ export type Database = {
           conditions?: Json
           created_at?: string
           created_by: string
+          decided_at?: string | null
           decided_spot_id?: string | null
           id?: string
           share_code?: string
@@ -99,6 +101,7 @@ export type Database = {
           conditions?: Json
           created_at?: string
           created_by?: string
+          decided_at?: string | null
           decided_spot_id?: string | null
           id?: string
           share_code?: string
@@ -127,6 +130,8 @@ export type Database = {
           id: string
           is_indoor: boolean
           is_published: boolean
+          lat: number | null
+          lng: number | null
           location: unknown
           municipality: string
           name: string
@@ -145,6 +150,8 @@ export type Database = {
           id?: string
           is_indoor: boolean
           is_published?: boolean
+          lat?: number | null
+          lng?: number | null
           location: unknown
           municipality: string
           name: string
@@ -163,6 +170,8 @@ export type Database = {
           id?: string
           is_indoor?: boolean
           is_published?: boolean
+          lat?: number | null
+          lng?: number | null
           location?: unknown
           municipality?: string
           name?: string
@@ -247,6 +256,10 @@ export type Database = {
           id: string
           share_code: string
         }[]
+      }
+      decide_outing: {
+        Args: { share_code: string; spot_id: string }
+        Returns: undefined
       }
       join_outing: {
         Args: { display_name: string; share_code: string }
