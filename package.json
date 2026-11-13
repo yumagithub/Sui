@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/ui": "~58.0.28",
+    "@supabase/supabase-js": "2.119.0",
     "expo": "~58.0.25",
     "expo-constants": "~58.0.16",
     "expo-device": "~58.0.5",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "csv-parse": "7.0.3",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~58.0.4",
     "typescript": "~6.0.3"
@@ -40,7 +42,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "import-spots": "node --experimental-strip-types --disable-warning=ExperimentalWarning --env-file-if-exists=.env.script.local scripts/import-spots.ts"
   },
   "private": true
 }

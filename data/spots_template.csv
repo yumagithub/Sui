@@ -1,0 +1,2 @@
+name,description,category,municipality,lat,lng,is_indoor,has_parking,car_free_ok,budget_yen,hours_note,photo_url,google_maps_url,tags,is_published
+例：サンプルカフェ（実在しない例です。この行は消してください）,海が見える2階席。夕方がおすすめ。ケーキが人気。,cafe,北谷町,26.3160,127.7570,true,true,false,1500,11:00-19:00 水曜休み,,"https://maps.google.com/?q=26.3160,127.7570",夕日;ひとり;デート,
