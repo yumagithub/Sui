@@ -52,7 +52,8 @@ export default function Picks() {
 
   return (
     <View className="flex-1 bg-slate-50">
-      <ScrollView contentContainerClassName="gap-4 px-5 pb-8 pt-4">
+      {/* iOS 26 以降はヘッダーが半透明で中身の上に重なるので、ヘッダーの高さ分を自動でずらす */}
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-4 px-5 pb-8 pt-4">
         {picks.isPending ? (
           <View className="items-center py-24">
             <ActivityIndicator size="large" color="#0d9488" />

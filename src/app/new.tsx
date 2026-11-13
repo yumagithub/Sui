@@ -85,7 +85,8 @@ export default function NewOuting() {
 
   return (
     <View className="flex-1 bg-slate-50">
-      <ScrollView contentContainerClassName="gap-7 px-5 pb-8 pt-4">
+      {/* iOS 26 以降はヘッダーが半透明で中身の上に重なるので、ヘッダーの高さ分を自動でずらす */}
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-7 px-5 pb-8 pt-4">
         <View className="gap-3">
           <Section title="どのへん？">
             <Chip
