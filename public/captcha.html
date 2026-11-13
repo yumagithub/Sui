@@ -1,0 +1,68 @@
+<!doctype html>
+<!--
+  アプリ（iOS / Android）用の CAPTCHA ページ。
+  Turnstile はアプリの中では直接動かないので、Web 版と一緒に公開したこのページを WebView で開く。
+  確認が通ったらトークンを ReactNativeWebView.postMessage でアプリに返す。
+  サイトキーは ?sitekey=... で受け取る（サイトキーは公開してよい値）。
+-->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Sui</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="widget"></div>
+    <script>
+      function send(message) {
+        if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(message));
+      }
+
+      window.onTurnstileLoad = function () {
+        var sitekey = new URLSearchParams(location.search).get("sitekey");
+        if (!sitekey) {
+          send({ type: "error", code: "no-sitekey" });
+          return;
+        }
+        turnstile.render("#widget", {
+          sitekey: sitekey,
+          appearance: "interaction-only",
+          theme: "light",
+          language: "ja",
+          callback: function (token) {
+            send({ type: "token", token: token });
+          },
+          "error-callback": function (code) {
+            send({ type: "error", code: String(code) });
+            return true;
+          },
+          "expired-callback": function () {
+            send({ type: "expired" });
+          },
+          "before-interactive-callback": function () {
+            send({ type: "interactive" });
+          },
+        });
+      };
+    </script>
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad"
+      async
+      defer
+      onerror="send({ type: 'error', code: 'script' })"
+    ></script>
+  </body>
+</html>

@@ -75,9 +75,11 @@ export default function OutingVote() {
   const me = useMe();
   const ensureSession = useEnsureSession();
   const [authError, setAuthError] = useState(false);
+  // 「もう一回」で数字を進めて、ログインをやり直す
+  const [authAttempt, setAuthAttempt] = useState(0);
   useEffect(() => {
     if (me.data === null) ensureSession().catch(() => setAuthError(true));
-  }, [me.data, ensureSession]);
+  }, [me.data, ensureSession, authAttempt]);
 
   const outing = useOuting(code, me.data);
   const outingId = outing.data?.id;
@@ -117,7 +119,14 @@ export default function OutingVote() {
     return (
       <Centered>
         <Text className="text-base text-slate-600">うまく開けなかった…</Text>
-        <Button label="もう一回" variant="secondary" onPress={() => setAuthError(false)} />
+        <Button
+          label="もう一回"
+          variant="secondary"
+          onPress={() => {
+            setAuthError(false);
+            setAuthAttempt((n) => n + 1);
+          }}
+        />
       </Centered>
     );
   }

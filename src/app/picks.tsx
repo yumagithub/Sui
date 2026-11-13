@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/button";
 import { NameSheet } from "@/components/name-form";
 import { SpotCard } from "@/components/spot-card";
-import { useEnsureSession } from "@/lib/auth";
+import { CaptchaCancelledError, useEnsureSession } from "@/lib/auth";
 import { fromParams, toParams, toPickArgs, type Conditions } from "@/lib/conditions";
 import { myOutingsQueryKey } from "@/lib/outings";
 import { saveDisplayName } from "@/lib/prefs";
@@ -42,6 +42,7 @@ export default function Picks() {
   const queryClient = useQueryClient();
   const ensureSession = useEnsureSession();
   const [nameOpen, setNameOpen] = useState(false);
+  const [sessionFailed, setSessionFailed] = useState(false);
   const createOuting = useMutation({
     mutationFn: async (displayName: string) => {
       await ensureSession();
@@ -118,10 +119,21 @@ export default function Picks() {
       </ScrollView>
 
       <View className="gap-3 border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
+        {sessionFailed ? (
+          <Text className="text-center text-sm text-red-600">うまくつながらなかった。もう一回試してね</Text>
+        ) : null}
         <Button
           label="この3つで友達に聞く"
-          onPress={() => {
+          onPress={async () => {
             createOuting.reset();
+            setSessionFailed(false);
+            // 名前の入力より先にログインしておく（CAPTCHA の画面と名前の画面が重ならないように）
+            try {
+              await ensureSession();
+            } catch (e) {
+              if (!(e instanceof CaptchaCancelledError)) setSessionFailed(true);
+              return;
+            }
             setNameOpen(true);
           }}
           disabled={spots.length !== 3 || picks.isFetching}

@@ -1,7 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
+import { useCaptcha } from "@/components/captcha/provider";
+
 import { supabase } from "./supabase";
+
+export { CaptchaCancelledError } from "@/components/captcha/provider";
 
 export const meQueryKey = ["me"] as const;
 
@@ -17,15 +21,29 @@ export function useMe() {
   });
 }
 
-/** ログインしていなければ匿名でログインして、ユーザーIDを返す */
+// 同時に呼ばれても、匿名ユーザーを2人作らないように
+let signingIn: Promise<string> | null = null;
+
+/**
+ * ログインしていなければ、CAPTCHA を通ってから匿名でログインして、ユーザーIDを返す。
+ * CAPTCHA をやめたときは CaptchaCancelledError になる。
+ */
 export function useEnsureSession() {
   const queryClient = useQueryClient();
+  const getCaptchaToken = useCaptcha();
   return useCallback(async () => {
     const { data } = await supabase.auth.getSession();
     if (data.session) return data.session.user.id;
-    const { data: signedIn, error } = await supabase.auth.signInAnonymously();
-    if (error || !signedIn.user) throw new Error(error?.message ?? "ログインできませんでした");
-    queryClient.setQueryData(meQueryKey, signedIn.user.id);
-    return signedIn.user.id;
-  }, [queryClient]);
+
+    signingIn ??= (async () => {
+      const captchaToken = await getCaptchaToken();
+      const { data: signedIn, error } = await supabase.auth.signInAnonymously({ options: { captchaToken } });
+      if (error || !signedIn.user) throw new Error(error?.message ?? "ログインできませんでした");
+      queryClient.setQueryData(meQueryKey, signedIn.user.id);
+      return signedIn.user.id;
+    })().finally(() => {
+      signingIn = null;
+    });
+    return signingIn;
+  }, [queryClient, getCaptchaToken]);
 }
