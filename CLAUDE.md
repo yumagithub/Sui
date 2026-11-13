@@ -1,133 +1,74 @@
-# CLAUDE.md
+# Sui
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## プロダクト概要
 
-## About
+- コンセプト：「行き先が、すっと決まる。」
+- 対象ユーザー：沖縄本島中部（うるま市・沖縄市・北谷町・宜野湾市・北中城村・中城村・西原町）に住む大学生・専門学校生などの若者
+- 解決する課題：友達と遊ぶときに行き先がなかなか決まらない／いつも同じ場所になってしまう
+- 体験の流れ（MVP）：
+  1. 条件を数タップで選ぶ（エリア・車の有無・予算・気分）。天気は自動取得
+  2. 条件に合うスポットが **3つだけ** 出る（気に入らなければ引き直し）
+  3. LINEなどでリンクを共有する
+  4. 友達がアプリまたはWebページから投票する（投票はリアルタイムに反映）
+  5. 言い出しっぺが決定する → 全員の画面に決定したスポットが表示され、Googleマップで開ける
+  6. 後日「実際に行った？」に答えてもらう（検証用）
 
-Sui（すい）は沖縄在住者向けの AI 駆動スポット巡りアプリ。React Native (Expo) + TypeScript + Supabase で構築。
+## MVPで確かめたいこと
 
-## Commands
+- 3候補と投票で、行き先が実際に決まるか
+- 決まった場所に実際に行ったか（目標：4割以上）
+- 同じ人が2回目も使うか（目標：2割以上）
 
-```bash
-npm start          # Expo dev server（Expo Go で確認）
-npm run ios        # iOS シミュレーター
-npm run android    # Android エミュレーター
-npm run lint       # eslint-config-expo
+## MVPでやらないこと（提案もしないこと）
 
-# Supabase Edge Function のデプロイ
-npx supabase functions deploy suggest-route
+- 自前のルート案内・地図描画（Googleマップのリンクに渡す）
+- キーワード検索、一覧からのスポット探し
+- レビュー・コメント投稿
+- 広告、課金、店舗向け管理画面
+- 多言語対応
+- AIによる候補提案（最初は条件で絞り込み＋ランダム）
+- プッシュ通知
+- 本格的な会員登録（匿名ログインのみ）
 
-# DB マイグレーション適用（Supabase CLI v2.51.0）
-npx supabase db push
-```
+## 技術スタック
 
-No test runner is configured.
+- フロントエンド：Expo（最新の安定版SDK）+ TypeScript + Expo Router
+  - 対象：iOS / Android / Web（Webは主に投票ページ用。アプリを持っていない友達やAndroidの友達も投票できるようにするため）
+  - スタイル：NativeWind
+  - アニメーション：Reanimated / Gesture Handler
+  - データ取得：TanStack Query
+- バックエンド：Supabase
+  - Postgres + PostGIS（現在地からの距離で絞り込み）
+  - Auth：匿名ログイン（Anonymous Sign-in）
+  - Realtime：投票の反映
+  - Storage：スポットの写真
+  - 候補の抽選や作成処理は Postgres の関数（RPC）で行う
+- 天気：Open-Meteo（APIキー不要）
+- 配布：開発中は Expo Go / EAS の preview ビルド。Webは EAS Hosting
 
-## Architecture
+## データモデル（概要）
 
-### Routing
+- `spots`：スポット（名前、3行の説明、カテゴリ、市町村、位置、屋内か、駐車場、車なしで行けるか、予算の目安、営業時間のメモ、写真、GoogleマップURL、タグ）
+- `outings`：1回のおでかけ（共有コード、作成者、条件、状態 `voting` / `decided`、決定したスポット）
+- `outing_candidates`：おでかけごとの3候補
+- `outing_members`：おでかけの参加者（表示名）
+- `votes`：投票（1人1票、変更可）
+- `visit_feedback`：「実際に行った？」の回答
 
-Expo Router のファイルベースルーティング。
+## 開発ルール
 
-```
-app/
-  index.tsx          # 初回起動判定 → /onboarding or /(tabs)
-  _layout.tsx        # Root Stack + AuthProvider + deep link handler
-  onboarding.tsx     # スライド3枚 → ジャンル選択 → /auth
-  auth.tsx           # メール/パスワード認証 + ゲストスキップ
-  (tabs)/
-    _layout.tsx      # 4タブ: ホーム・探す・記録・マイページ
-    index.tsx        # ホーム（AI ルート提案）
-    search.tsx       # スポット検索
-    record.tsx       # 訪問履歴
-    mypage.tsx       # マイページ・ジャンル設定
-  spot/[id].tsx      # スポット詳細（ホーム・探すから遷移する共通画面）
-```
+- 実装の前に、必ず変更内容の計画を短く示し、確認を取ってから実装する
+- 1回の作業は1つの機能に絞り、小さくコミットする（コミットメッセージは日本語でよい）
+- 完了報告の前に、型チェック（`npx tsc --noEmit`）とlintが通ることを確認する
+- 依存パッケージは `npx expo install` で追加する
+- Supabaseのスキーマ変更は必ず `supabase/migrations/` にマイグレーションファイルとして残す
+- すべてのテーブルでRLSを有効にし、ポリシーを書く
+- アプリに含めてよいのは `anon` キーだけ。`service_role` キーは絶対にクライアントに置かない。`.env` はgitに含めない
+- UIの文言は日本語で、短く、親しみやすく
+- 完璧さより、動いて触れるものを優先する。迷ったら機能を減らす
+- 不明点があれば推測で進めず質問する
 
-新しい Stack 画面は `app/` に、タブ画面は `app/(tabs)/` に追加する。`app/_layout.tsx` の `<Stack>` への登録も忘れずに。
+## 使えるスキル
 
-### Auth Flow
-
-`contexts/auth.tsx` の `AuthProvider` が session を管理。`useAuth()` で `{ user, session, loading, signOut }` を取得。
-
-- **ゲスト**: `user === null`。スポット閲覧・AI 提案は可能。訪問記録は不可（→ `/auth` に誘導）
-- **ログイン済み**: Supabase Auth の JWT セッションを `expo-secure-store` に永続化
-- **セッション永続化**: `services/supabase.ts` で 2000 バイトごとにチャンク分割する `SecureStoreAdapter` を使用（`expo-secure-store` の上限対策）
-- **メール確認リンク**: `sui://` ディープリンクで受け取り `_layout.tsx` で `supabase.auth.setSession()` を呼ぶ
-
-### Supabase
-
-```ts
-// services/supabase.ts
-import { supabase } from '@/services/supabase';
-
-// スポット一覧（genres JOIN）
-supabase.from('spots').select('*, spot_genres(genres(slug, name))')
-
-// 訪問記録（spots JOIN）
-supabase.from('visits').select('id, spot_id, visited_at, memo, spots(name, area)')
-  .eq('user_id', user.id)
-```
-
-RLS: `spots` は全員 SELECT 可。`visits` / `users` / `user_preferences` は本人のみ。
-
-### AI ルート提案
-
-`supabase functions invoke('suggest-route')` → `supabase/functions/suggest-route/index.ts`（Deno）。
-
-フロー: DB からスポット候補取得 → Gemini API (`gemini-flash-latest`) に日本語プロンプト送信 → `{"spot_ids": [...]}` を受け取り → ID でスポット詳細を再クエリ → 返却。
-
-- Gemini API キーは `X-goog-api-key` ヘッダーで渡す（`?key=` クエリパラメータは動作しない）
-- Edge Function は Deno runtime のため `tsconfig.json` の `exclude` に `supabase/functions` を指定済み
-- `// @ts-nocheck` が Edge Function ファイルの先頭に必要
-
-### Hooks
-
-| Hook | 役割 |
-|---|---|
-| `useAuth()` | セッション・ユーザー情報 |
-| `useSpots(genreSlug, keyword)` | スポット一覧取得（ジャンル・キーワードフィルター） |
-| `useVisits()` | 訪問履歴の fetch / addVisit / deleteVisit |
-| `useRouteSuggestion()` | AI ルート提案。呼び出し時に `sui_genre_prefs` を自動読み込み |
-
-### SecureStore Keys
-
-| キー | 内容 |
-|---|---|
-| `sui_onboarding_done` | `"true"` で初回起動スキップ |
-| `sui_genre_prefs` | ジャンル slug の JSON 配列 `["nature","beach"]` |
-
-### Theming
-
-- `constants/theme.ts` — `Brand`（固定カラー）と `Colors`（`light`/`dark` 両対応）をエクスポート
-- `useColorScheme()` でカラースキームを取得し `Colors[colorScheme ?? 'light']` で色を参照
-- `ThemedText` / `ThemedView` を `Text` / `View` の代わりに使う
-
-### Path Aliases
-
-`@/*` → リポジトリルート（`tsconfig.json` で設定）。
-
-### Platform-specific files
-
-Expo は `.ios.tsx` を `.tsx` より優先解決する。`components/ui/icon-symbol.ios.tsx` が SF Symbols、`icon-symbol.tsx` が Android/Web フォールバック。
-
-## DB Schema
-
-```
-users ──< visits >── spots ──< spot_photos
-  |                    |
-  └── user_preferences └──< spot_genres >── genres
-```
-
-マイグレーションは `supabase/migrations/` に格納。`auth.users` への insert トリガーで `public.users` を自動作成。
-
-## Branding Constraints
-
-スポット説明文・UI コピーは「地元民が友人に教えるトーン」で統一する。
-
-- NG: 「沖縄を代表する絶景スポットです」「必見・絶対行くべき」
-- OK: 「観光客が帰る夕方以降が本番。地元の人はみんな知ってる夕日スポット」
-
-## Development Note
-
-マイページ下部の「🛠 初回状態にリセット（開発用）」ボタンで `sui_onboarding_done` と `sui_genre_prefs` をクリアしてオンボーディングを再確認できる。
+- Expo公式プラグイン（`expo-router`、`expo-native-ui`、`expo-animation`、`expo-data-fetching`、`eas-app-stores`、`eas-hosting` など）
+- Supabase公式プラグイン（`supabase`、`supabase-postgres-best-practices`）
