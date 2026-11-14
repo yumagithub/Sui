@@ -61,8 +61,8 @@ export default function NewOuting() {
       setArea(null);
       setLocationMessage(
         e instanceof LocationDeniedError
-          ? "位置情報がオフみたい。市町村から選んでね"
-          : "現在地がわからなかった。市町村から選んでね",
+          ? "位置情報がオフみたい。市町村からえらんでね"
+          : "現在地がわからなかった。市町村からえらんでね",
       );
     } finally {
       setLocating(false);
@@ -134,7 +134,7 @@ export default function NewOuting() {
         <View className="flex-row items-center gap-3 rounded-2xl bg-white p-4">
           <View className="flex-1 gap-0.5">
             {!origin ? (
-              <Text className="text-sm text-slate-500">場所を選ぶと天気を見ます</Text>
+              <Text className="text-sm text-slate-500">場所をえらぶと、天気を見るよ</Text>
             ) : weather.isPending ? (
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" />
@@ -161,7 +161,7 @@ export default function NewOuting() {
       </ScrollView>
 
       <View className="border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
-        <Button label={area ? "3つ出す" : "まず場所を選んでね"} onPress={submit} disabled={!area} />
+        <Button label={area ? "3つ出す" : "まず場所をえらんでね"} onPress={submit} disabled={!area} />
       </View>
     </View>
   );

@@ -1,8 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Platform, ScrollView, Text, View } from "react-native";
-import Animated from "react-native-reanimated";
+import { Platform, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
@@ -11,7 +10,8 @@ import { DecidedView } from "@/components/decided-view";
 import { NameForm } from "@/components/name-form";
 import { PressableScale } from "@/components/pressable-scale";
 import { SpotCard, type SpotSummary } from "@/components/spot-card";
-import { CSS_EASE_OUT } from "@/constants/motion";
+import { Loading, Problem } from "@/components/state-view";
+import { Tally } from "@/components/tally";
 import { useEnsureSession, useMe } from "@/lib/auth";
 import {
   canAskFeedback,
@@ -24,71 +24,9 @@ import {
   useOuting,
   useOutingRealtime,
   useVotes,
-  type Member,
-  type Vote,
 } from "@/lib/outings";
 import { saveDisplayName } from "@/lib/prefs";
 import { outingUrl, shareOuting, type ShareResult } from "@/lib/share";
-
-function Centered({ children }: { children: React.ReactNode }) {
-  return <View className="flex-1 items-center justify-center gap-4 bg-slate-50 px-6">{children}</View>;
-}
-
-/** 票数のバーと、投票した人の名前 */
-function Tally({
-  votes,
-  members,
-  me,
-  total,
-  isTop,
-}: {
-  votes: Vote[];
-  members: Member[];
-  me: string;
-  total: number;
-  isTop: boolean;
-}) {
-  const names = votes.map((v) =>
-    v.user_id === me ? "あなた" : (members.find((m) => m.user_id === v.user_id)?.display_name ?? "だれか"),
-  );
-  const ratio = total === 0 ? 0 : votes.length / total;
-
-  return (
-    <View className="mt-1 gap-1.5">
-      <View className="flex-row items-center gap-3">
-        <View className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-          {/* 中身のない絶対配置の要素なので width を CSS transition で動かす（expo-animation スキルの例外）。
-              Animated.View には NativeWind の className が効かないので style で書く */}
-          <Animated.View
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              borderRadius: 999,
-              backgroundColor: "#14b8a6",
-              width: `${Math.round(ratio * 100)}%`,
-              transitionProperty: "width",
-              transitionDuration: 200,
-              transitionTimingFunction: CSS_EASE_OUT,
-            }}
-          />
-        </View>
-        <Text className="w-10 text-right text-sm font-bold text-slate-700">{votes.length}票</Text>
-      </View>
-      {isTop ? (
-        <Text className="self-start rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
-          いちばん人気
-        </Text>
-      ) : null}
-      {names.length > 0 ? (
-        <Text className="text-xs text-slate-500" numberOfLines={2}>
-          {names.join("・")}
-        </Text>
-      ) : null}
-    </View>
-  );
-}
 
 export default function OutingVote() {
   const insets = useSafeAreaInsets();
@@ -161,34 +99,30 @@ export default function OutingVote() {
 
   if (authError) {
     return (
-      <Centered>
-        <Text className="text-base text-slate-600">うまく開けなかった…</Text>
-        <Button
-          label="もう一回"
-          variant="secondary"
-          onPress={() => {
-            setAuthError(false);
-            setAuthAttempt((n) => n + 1);
-          }}
-        />
-      </Centered>
+      <Problem
+        title="うまく開けなかった"
+        message="確認がとちゅうで止まったみたい"
+        actionLabel="もう一回"
+        onAction={() => {
+          setAuthError(false);
+          setAuthAttempt((n) => n + 1);
+        }}
+      />
     );
   }
 
   if (me.isPending || me.data === null || outing.isPending) {
-    return (
-      <Centered>
-        <ActivityIndicator size="large" color="#0d9488" />
-      </Centered>
-    );
+    return <Loading />;
   }
 
   if (outing.isError) {
     return (
-      <Centered>
-        <Text className="text-base text-slate-600">うまく読み込めなかった…</Text>
-        <Button label="もう一回" variant="secondary" onPress={() => outing.refetch()} />
-      </Centered>
+      <Problem
+        title="読み込めなかった"
+        message="通信がうまくいかなかったみたい"
+        actionLabel="もう一回"
+        onAction={() => outing.refetch()}
+      />
     );
   }
 
@@ -232,6 +166,10 @@ export default function OutingVote() {
     userId === myId ? "あなた" : (members.data?.find((m) => m.user_id === userId)?.display_name ?? "だれか");
 
   const decidedSpot = decided ? outing.data.candidates.find((c) => c.id === outing.data?.decided_spot_id) : undefined;
+  // 決定した場所があとから非公開になったときは、候補として読めない
+  if (decided && !decidedSpot) {
+    return <Problem title="行き先は決まっています" message="ただ、その場所は今は表示できないみたい" />;
+  }
   if (decidedSpot) {
     return (
       <View className="flex-1 bg-slate-50">
@@ -265,7 +203,7 @@ export default function OutingVote() {
               ? myVote
                 ? "投票したよ。ほかをタップすると変えられる"
                 : "行きたいところをタップして投票してね"
-              : "投票はおわりました"}
+              : "投票はおわったよ"}
             {members.data ? `（参加 ${members.data.length}人）` : ""}
           </Text>
         </View>

@@ -204,7 +204,7 @@ export function useMyOutings(me: string | null | undefined) {
           share_code: outing.share_code,
           status: outing.status,
           created_at: outing.created_at,
-          spotNames: candidates.map((c) => c.spot?.name ?? "（非公開のスポット）"),
+          spotNames: candidates.map((c) => c.spot?.name ?? "（今は見られない場所）"),
           decidedName: decided?.spot?.name ?? null,
           needsFeedback: canAskFeedback(outing.decided_at) && !visit_feedback,
         };

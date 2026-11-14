@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -67,11 +67,35 @@ export default function Home() {
               <OutingRow key={o.id} outing={o} />
             ))}
           </View>
-        ) : null}
+        ) : (
+          // はじめての人向けに、使い方を3つだけ
+          <View className="gap-3 rounded-2xl bg-white p-5">
+            {[
+              "条件をタップでえらぶと、候補が3つ出る",
+              "リンクを送って、友達と投票",
+              "決まったら、Googleマップでそのまま出発",
+            ].map((step, i) => (
+              <View key={step} className="flex-row items-center gap-3">
+                <Text className="h-7 w-7 rounded-full bg-teal-50 text-center text-sm font-bold leading-7 text-teal-700">
+                  {i + 1}
+                </Text>
+                <Text className="flex-1 text-[15px] text-slate-700">{step}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
-      <View className="px-5 pt-3" style={{ paddingBottom: insets.bottom + 16 }}>
+      <View className="gap-3 px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
         <Button label="行き先を決める" onPress={() => router.push("/new")} />
+        <View className="flex-row justify-center gap-4">
+          <Link href="/terms" className="text-xs text-slate-400">
+            利用規約
+          </Link>
+          <Link href="/privacy" className="text-xs text-slate-400">
+            プライバシーポリシー
+          </Link>
+        </View>
       </View>
     </View>
   );

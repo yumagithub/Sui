@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
+import { Loading, Problem } from "@/components/state-view";
 import { NameSheet } from "@/components/name-form";
 import { SpotCard } from "@/components/spot-card";
 import { CaptchaCancelledError, useEnsureSession } from "@/lib/auth";
@@ -64,10 +65,12 @@ export default function Picks() {
 
   if (!conditions) {
     return (
-      <View className="flex-1 items-center justify-center gap-4 bg-slate-50 px-6">
-        <Text className="text-base text-slate-600">条件が見つからなかった</Text>
-        <Button label="条件をえらぶ" onPress={() => router.replace("/new")} />
-      </View>
+      <Problem
+        title="条件がわからなかった"
+        message="もう一回えらびなおしてね"
+        actionLabel="条件をえらぶ"
+        onAction={() => router.replace("/new")}
+      />
     );
   }
 
@@ -83,19 +86,21 @@ export default function Picks() {
       {/* iOS 26 以降はヘッダーが半透明で中身の上に重なるので、ヘッダーの高さ分を自動でずらす */}
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-4 px-5 pb-8 pt-4">
         {picks.isPending ? (
-          <View className="items-center py-24">
-            <ActivityIndicator size="large" color="#0d9488" />
-          </View>
+          <Loading label="さがしてるよ…" />
         ) : picks.isError ? (
-          <View className="items-center gap-4 py-24">
-            <Text className="text-base text-slate-600">うまく取れなかった…</Text>
-            <Button label="もう一回" variant="secondary" onPress={() => picks.refetch()} />
-          </View>
+          <Problem
+            title="候補を出せなかった"
+            message="通信がうまくいかなかったみたい"
+            actionLabel="もう一回"
+            onAction={() => picks.refetch()}
+          />
         ) : spots.length === 0 ? (
-          <View className="items-center gap-2 py-24">
-            <Text className="text-base font-semibold text-slate-700">合う場所が見つからなかった</Text>
-            <Text className="text-sm text-slate-500">条件を変えてみてね</Text>
-          </View>
+          <Problem
+            title="合う場所が見つからなかった"
+            message="エリアや車の条件を変えてみてね"
+            actionLabel="条件を変える"
+            onAction={() => (router.canGoBack() ? router.back() : router.replace("/new"))}
+          />
         ) : (
           <>
             {relaxed ? (
@@ -165,7 +170,13 @@ export default function Picks() {
         description="投票ページで、みんなに表示されます"
         submitLabel="投票ページを作る"
         loading={createOuting.isPending}
-        error={createOuting.error ? "うまく作れなかった。もう一回試してね" : null}
+        error={
+          createOuting.error
+            ? createOuting.error.message.startsWith("ちょっと作りすぎかも")
+              ? createOuting.error.message
+              : "うまく作れなかった。もう一回試してね"
+            : null
+        }
         onSubmit={(name) => createOuting.mutate(name)}
       />
     </View>

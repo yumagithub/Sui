@@ -1,3 +1,4 @@
+import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,10 +16,12 @@ type FormProps = {
   loading?: boolean;
   error?: string | null;
   onSubmit: (name: string) => void;
+  /** 規約のリンクを押したとき（シートの中なら閉じてから移る） */
+  onLeave?: () => void;
 };
 
 /** 表示名を入れるフォーム。前に入れた名前があれば最初から入れておく */
-export function NameForm({ title, description, submitLabel, loading, error, onSubmit }: FormProps) {
+export function NameForm({ title, description, submitLabel, loading, error, onSubmit, onLeave }: FormProps) {
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -55,6 +58,17 @@ export function NameForm({ title, description, submitLabel, loading, error, onSu
       />
       {error ? <Text className="text-sm text-red-600">{error}</Text> : null}
       <Button label={submitLabel} onPress={submit} disabled={!valid} loading={loading} />
+      <Text className="text-center text-xs text-slate-400">
+        進むと
+        <Link href="/terms" onPress={onLeave} className="text-slate-500 underline">
+          利用規約
+        </Link>
+        と
+        <Link href="/privacy" onPress={onLeave} className="text-slate-500 underline">
+          プライバシーポリシー
+        </Link>
+        に同意したことになります
+      </Text>
     </View>
   );
 }
@@ -77,7 +91,7 @@ export function NameSheet({ visible, onClose, ...form }: SheetProps) {
           accessibilityLabel="閉じる"
         />
         <View className="rounded-t-3xl bg-slate-50 px-5 pt-6" style={{ paddingBottom: insets.bottom + 16 }}>
-          <NameForm {...form} />
+          <NameForm {...form} onLeave={onClose} />
         </View>
       </KeyboardAvoidingView>
     </Modal>
