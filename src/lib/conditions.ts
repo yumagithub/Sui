@@ -88,6 +88,14 @@ export function toParams(c: Conditions): ConditionParams {
   };
 }
 
+/**
+ * おでかけに保存する条件。現在地の座標は保存しない（位置情報は候補の抽選にだけ使う約束のため）。
+ */
+export function toStoredConditions(c: Conditions): Omit<ConditionParams, "lat" | "lng"> {
+  const { lat: _lat, lng: _lng, ...rest } = toParams(c);
+  return rest;
+}
+
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 export function fromParams(params: Record<string, string | string[] | undefined>): Conditions | null {

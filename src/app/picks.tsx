@@ -9,7 +9,7 @@ import { Button } from "@/components/button";
 import { NameSheet } from "@/components/name-form";
 import { SpotCard } from "@/components/spot-card";
 import { CaptchaCancelledError, useEnsureSession } from "@/lib/auth";
-import { fromParams, toParams, toPickArgs, type Conditions } from "@/lib/conditions";
+import { fromParams, toPickArgs, toStoredConditions, type Conditions } from "@/lib/conditions";
 import { myOutingsQueryKey } from "@/lib/outings";
 import { saveDisplayName } from "@/lib/prefs";
 import { supabase } from "@/lib/supabase";
@@ -49,7 +49,7 @@ export default function Picks() {
       const { data, error } = await supabase.rpc("create_outing", {
         spot_ids: (picks.data ?? []).map((s) => s.id),
         display_name: displayName,
-        conditions: conditions ? toParams(conditions) : {},
+        conditions: conditions ? toStoredConditions(conditions) : {},
       });
       if (error || !data?.[0]) throw new Error(error?.message ?? "作れませんでした");
       await saveDisplayName(displayName);
