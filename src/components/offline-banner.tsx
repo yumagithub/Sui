@@ -3,8 +3,14 @@ import { Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-/** オフラインのあいだだけ、画面の上に小さく出す */
+import { isServer } from "@/lib/platform";
+
+/** オフラインのあいだだけ、画面の上に小さく出す（サーバー側描画では出さない） */
 export function OfflineBanner() {
+  return isServer ? null : <Banner />;
+}
+
+function Banner() {
   const insets = useSafeAreaInsets();
   const network = useNetworkState();
   const offline = network.isConnected === false || network.isInternetReachable === false;

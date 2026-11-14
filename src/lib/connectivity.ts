@@ -2,6 +2,8 @@ import { focusManager, onlineManager } from "@tanstack/react-query";
 import * as Network from "expo-network";
 import { AppState, Platform } from "react-native";
 
+import { isServer } from "./platform";
+
 let installed = false;
 
 /**
@@ -10,7 +12,8 @@ let installed = false;
  * - アプリに戻ってきたら読み直す（バックグラウンド中に Realtime が切れることがあるため）
  */
 export function setupConnectivity() {
-  if (installed) return;
+  // Web のサーバー側描画では window がないので何もしない（ブラウザで動き出してから設定する）
+  if (installed || isServer) return;
   installed = true;
 
   onlineManager.setEventListener((setOnline) => {
