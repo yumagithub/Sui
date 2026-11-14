@@ -8,6 +8,7 @@
     "scheme": "sui",
     "userInterfaceStyle": "light",
     "android": {
+      "package": "com.suiokinawa.app",
       "adaptiveIcon": {
         "backgroundColor": "#0d9488",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
