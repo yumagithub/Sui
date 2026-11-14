@@ -3,13 +3,11 @@ import { createClient, processLock } from "@supabase/supabase-js";
 import { AppState, Platform } from "react-native";
 
 import type { Database } from "./database.types";
+import { isServer } from "./platform";
 
 // アプリに入れてよいのは publishable キーだけ（秘密キーは絶対に置かない）
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const publishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-// Web のサーバー側描画（SSR）ではブラウザの保存先がないので、ログイン状態は持たない
-const isServer = Platform.OS === "web" && typeof window === "undefined";
 
 // サーバー側描画では Supabase を呼ばない（データの取得はブラウザで行う）。
 // 公開先（EAS Hosting）のサーバーには環境変数がないので、そこでは止めずに仮の値で作っておく。

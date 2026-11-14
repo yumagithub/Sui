@@ -1,8 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
+import { isServer } from "./platform";
 
 const DISPLAY_NAME_KEY = "sui.displayName";
-const isServer = Platform.OS === "web" && typeof window === "undefined";
 
 /** 前に入れた表示名（なければ空文字） */
 export async function loadDisplayName(): Promise<string> {

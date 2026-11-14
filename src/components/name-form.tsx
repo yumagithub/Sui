@@ -1,10 +1,10 @@
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, TextInput, View } from "react-native";
 
 import { loadDisplayName } from "@/lib/prefs";
 
+import { BottomSheet } from "./bottom-sheet";
 import { Button } from "./button";
 
 const MAX = 20;
@@ -80,20 +80,9 @@ type SheetProps = FormProps & {
 
 /** 下から出てくる名前入力（結果画面の「友達に聞く」で使う） */
 export function NameSheet({ visible, onClose, ...form }: SheetProps) {
-  const insets = useSafeAreaInsets();
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 justify-end">
-        <Pressable
-          className="absolute inset-0 bg-black/30"
-          onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel="閉じる"
-        />
-        <View className="rounded-t-3xl bg-slate-50 px-5 pt-6" style={{ paddingBottom: insets.bottom + 16 }}>
-          <NameForm {...form} onLeave={onClose} />
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+    <BottomSheet visible={visible} onClose={onClose}>
+      <NameForm {...form} onLeave={onClose} />
+    </BottomSheet>
   );
 }

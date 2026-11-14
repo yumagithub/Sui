@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, useReducedMotion } from "react-native-reanimated";
 
+import { categoryOf } from "@/constants/categories";
 import { EASE_OUT } from "@/constants/motion";
 import { openMaps } from "@/lib/maps";
 
@@ -11,13 +12,7 @@ import type { SpotSummary } from "./spot-card";
 
 import { Button } from "./button";
 
-const CATEGORY_BG: Record<string, string> = {
-  food: "bg-orange-100",
-  cafe: "bg-amber-100",
-  play: "bg-violet-100",
-  nature: "bg-emerald-100",
-  view: "bg-sky-100",
-};
+
 
 type FeedbackProps = {
   answer: boolean | null | undefined;
@@ -110,8 +105,8 @@ export function DecidedView({ spot, voterNames, feedback }: Props) {
               accessibilityIgnoresInvertColors
             />
           ) : (
-            <View className={`aspect-[4/3] items-center justify-center ${CATEGORY_BG[spot.category] ?? "bg-teal-50"}`}>
-              <Ionicons name="flag" size={56} color="#0d9488" />
+            <View className={`aspect-[4/3] items-center justify-center ${categoryOf(spot.category).bg}`}>
+              <Ionicons name={categoryOf(spot.category).icon} size={56} color={categoryOf(spot.category).fg} />
             </View>
           )}
           <View className="gap-2 p-5">

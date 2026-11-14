@@ -1,9 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
-import { useMemo, type ComponentProps, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown, FadeOut, useReducedMotion } from "react-native-reanimated";
 
+import { categoryOf, type IconName } from "@/constants/categories";
 import { CARD_ENTER_MS, CARD_EXIT_MS, CARD_STAGGER_MS, EASE_OUT } from "@/constants/motion";
 import type { Database } from "@/lib/database.types";
 
@@ -30,15 +31,7 @@ export type SpotSummary = {
   lng?: number | null;
 };
 
-type IconName = ComponentProps<typeof Ionicons>["name"];
 
-const CATEGORY: Record<string, { label: string; icon: IconName; bg: string; fg: string }> = {
-  food: { label: "ごはん", icon: "restaurant", bg: "bg-orange-100", fg: "#ea580c" },
-  cafe: { label: "カフェ", icon: "cafe", bg: "bg-amber-100", fg: "#b45309" },
-  play: { label: "遊ぶ", icon: "game-controller", bg: "bg-violet-100", fg: "#7c3aed" },
-  nature: { label: "自然", icon: "leaf", bg: "bg-emerald-100", fg: "#059669" },
-  view: { label: "景色", icon: "image", bg: "bg-sky-100", fg: "#0284c7" },
-};
 
 function budgetLabel(yen: number | null) {
   if (yen === null) return "予算？";
@@ -71,7 +64,7 @@ type Props = {
 
 export function SpotCard({ spot, index, showDistance = false, selected = false, children }: Props) {
   const reduceMotion = useReducedMotion();
-  const category = CATEGORY[spot.category] ?? CATEGORY.play;
+  const category = categoryOf(spot.category);
 
   // 下から少しだけ浮かび上がる。視差効果を減らす設定ならフェードだけ。
   // ※ 自作の Keyframe は Web でキーフレームが入らず表示されないことがあったので、組み込みのものを使う
