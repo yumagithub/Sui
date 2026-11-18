@@ -37,9 +37,7 @@ export function DecideSheet({ visible, candidates, counts, loading, error, onCon
   return (
     <BottomSheet visible={visible} onClose={close}>
       <Text className="text-xl font-bold text-ink">どこに決める？</Text>
-      <Text className="mt-1 text-sm text-ink-soft">
-        決めると、みんなの画面が切り替わるよ（あとから変えられません）
-      </Text>
+      <Text className="mt-1 text-sm text-ink-soft">決めると、みんなの画面が切り替わるよ（あとから変えられません）</Text>
 
       <ScrollView className="mt-4" contentContainerClassName="gap-3">
         {candidates.map((spot) => {
@@ -76,7 +74,15 @@ export function DecideSheet({ visible, candidates, counts, loading, error, onCon
         })}
       </ScrollView>
 
-      {error ? <Text className="mt-3 text-sm text-coral-ink">{error}</Text> : null}
+      {error ? (
+        <Text
+          className="mt-3 text-sm font-bold text-coral-ink"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+        >
+          {error}
+        </Text>
+      ) : null}
       <View className="mt-4">
         <Button
           label={selectedName ? `${selectedName}に決定！` : "場所をえらんでね"}

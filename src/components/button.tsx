@@ -1,10 +1,23 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, View, type PressableStateCallbackType } from "react-native";
 
 import { Text } from "@/components/text";
 import { COLORS } from "@/constants/colors";
 
 import { Sticker } from "./sticker";
+
+/** Web でキーボード移動したときの枠（クリックやタップでは出ない） */
+export function focusRing(state: PressableStateCallbackType & { focused?: boolean }) {
+  return state.focused && Platform.OS === "web"
+    ? {
+        outlineStyle: "solid" as const,
+        outlineWidth: 3,
+        outlineColor: COLORS.seaInk,
+        outlineOffset: 3,
+        borderRadius: 20,
+      }
+    : null;
+}
 
 type Props = {
   label: string;
@@ -28,9 +41,13 @@ export function Button({ label, onPress, variant = "primary", disabled, loading 
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityState={{ disabled: inactive, busy: loading }}
-        className="min-h-11 items-center justify-center px-3"
+        style={(state) => [
+          { minHeight: 44, alignItems: "center", justifyContent: "center", paddingHorizontal: 12 },
+          focusRing(state),
+        ]}
       >
-        <Text className="text-[15px] font-bold" style={{ color: inactive ? COLORS.inkFaint : COLORS.seaInk }}>
+        {/* 文字だけのボタンは下線で「押せる」ことを色以外でも示す */}
+        <Text className="text-[15px] font-bold underline" style={{ color: inactive ? COLORS.inkFaint : COLORS.seaInk }}>
           {label}
         </Text>
       </Pressable>
@@ -48,6 +65,7 @@ export function Button({ label, onPress, variant = "primary", disabled, loading 
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: inactive, busy: loading }}
+      style={focusRing}
     >
       <Sticker color={face} radius={18} offset={variant === "primary" ? 5 : 4} pressed={pressed && !inactive}>
         <View className="min-h-14 flex-row items-center justify-center gap-2 px-5">

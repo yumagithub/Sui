@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Platform, ScrollView, View } from "react-native";
 import { Text } from "@/components/text";
@@ -38,8 +38,8 @@ function Steps({ current }: { current: number }) {
       {labels.map((label, i) => (
         <View key={label} className="flex-1 flex-row items-center gap-1.5">
           <View
-            className="h-7 w-7 items-center justify-center rounded-full border-2 border-ink"
-            style={{ backgroundColor: i < current ? COLORS.sea : i === current ? COLORS.sun : COLORS.white }}
+            className="size-7 items-center justify-center rounded-full border-2 border-ink"
+            style={{ backgroundColor: i < current ? COLORS.seaInk : i === current ? COLORS.sun : COLORS.white }}
           >
             <Text className="text-xs font-bold" style={{ color: i < current ? COLORS.white : COLORS.ink }}>
               {i < current ? "✓" : i + 1}
@@ -198,7 +198,14 @@ export default function OutingVote() {
   const decidedSpot = decided ? outing.data.candidates.find((c) => c.id === outing.data?.decided_spot_id) : undefined;
   // 決定した場所があとから非公開になったときは、候補として読めない
   if (decided && !decidedSpot) {
-    return <Problem title="行き先は決まっています" message="ただ、その場所は今は表示できないみたい" />;
+    return (
+      <Problem
+        title="行き先は決まっています"
+        message="ただ、その場所は今は表示できないみたい"
+        actionLabel="ホームへ"
+        onAction={() => router.replace("/")}
+      />
+    );
   }
   if (decidedSpot) {
     return (
@@ -239,7 +246,7 @@ export default function OutingVote() {
         <View className="gap-3">
           {isCreator ? <Steps current={creatorStep} /> : null}
           <View className="gap-1">
-            <Text className="text-[26px] font-bold text-ink" accessibilityRole="header">
+            <Text className="text-[28px] font-bold text-ink" accessibilityRole="header">
               どこ行く？
             </Text>
             <Text className="text-[15px] leading-6 text-ink-soft" accessibilityLiveRegion="polite">

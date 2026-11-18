@@ -51,7 +51,7 @@ function OutingRow({ outing }: { outing: MyOuting }) {
 /** ホームの主役：診断のカード。押せるのは中の「診断スタート」だけで、そこだけが沈む */
 function QuizHero() {
   return (
-    <Sticker color={COLORS.sea} radius={28} offset={6}>
+    <Sticker color={COLORS.seaInk} radius={28} offset={6}>
       <View className="gap-3 px-5 pb-5 pt-5">
         <Text className="self-start rounded-full border-2 border-ink bg-sun px-3 py-0.5 text-[13px] font-bold text-ink">
           スワイプで30秒
@@ -102,7 +102,7 @@ export default function Home() {
             {["スワイプで答えると、行き先が3つ出る", "リンクを送って、友達と投票", "決まったら Googleマップで出発"].map(
               (step, i) => (
                 <View key={step} className="flex-row items-center gap-3">
-                  <View className="h-8 w-8 items-center justify-center rounded-full border-2 border-ink bg-white">
+                  <View className="size-8 items-center justify-center rounded-full border-2 border-ink bg-white">
                     <Text className="text-sm font-bold text-ink">{i + 1}</Text>
                   </View>
                   <Text className="flex-1 text-[15px] text-ink">{step}</Text>

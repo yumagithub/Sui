@@ -29,7 +29,7 @@ export function Tally({
     <View className="mt-1 gap-1.5">
       <View className="flex-row items-center gap-3">
         <View className="h-3.5 flex-1 overflow-hidden rounded-full border-2 border-ink bg-white">
-          {/* 中身のない絶対配置の要素なので width を CSS transition で動かす（expo-animation スキルの例外）。
+          {/* 幅（レイアウト）は動かさず、左端を起点に scaleX で伸び縮みさせる（GPU で描ける transform だけを動かす）。
               Animated.View には NativeWind の className が効かないので style で書く */}
           <Animated.View
             style={{
@@ -37,16 +37,19 @@ export function Tally({
               top: 0,
               bottom: 0,
               left: 0,
-              borderRadius: 999,
+              right: 0,
               backgroundColor: COLORS.sea,
-              width: `${Math.round(ratio * 100)}%`,
-              transitionProperty: "width",
+              transformOrigin: "left center",
+              transform: [{ scaleX: ratio }],
+              transitionProperty: "transform",
               transitionDuration: 200,
               transitionTimingFunction: CSS_EASE_OUT,
             }}
           />
         </View>
-        <Text className="w-10 text-right text-sm font-bold text-ink">{votes.length}票</Text>
+        <Text className="w-10 text-right text-sm font-bold text-ink" style={{ fontVariant: ["tabular-nums"] }}>
+          {votes.length}票
+        </Text>
       </View>
       {isTop ? (
         <Text className="self-start rounded-full border-2 border-ink bg-coral px-2 py-0.5 text-xs font-bold text-ink">

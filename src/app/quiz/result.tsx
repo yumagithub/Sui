@@ -99,7 +99,12 @@ export default function QuizResult() {
             onAction={() => picks.refetch()}
           />
         ) : spots.length === 0 ? (
-          <Problem title="合う場所が見つからなかった" message="ほかのエリアでもう一回診断してみてね" />
+          <Problem
+            title="合う場所が見つからなかった"
+            message="ほかのエリアでもう一回診断してみてね"
+            actionLabel="もう一回診断する"
+            onAction={() => router.replace("/quiz")}
+          />
         ) : (
           spots.map((spot, i) => (
             <SpotCard

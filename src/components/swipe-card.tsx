@@ -109,9 +109,9 @@ export function SwipeCard({ question, onAnswer, ref }: Props) {
 
   return (
     <GestureDetector gesture={pan}>
+      {/* 指で動かす transform（外側）と、登場のフェード（内側）は別の View に分ける。
+          同じ View にすると、ネイティブでは登場アニメーションが transform を上書きすることがある */}
       <Animated.View
-        key={question.id}
-        entering={entering}
         style={[{ width: "100%", maxWidth: 360, aspectRatio: 0.82, alignSelf: "center" }, cardStyle]}
         accessible
         accessibilityRole="adjustable"
@@ -123,46 +123,58 @@ export function SwipeCard({ question, onAnswer, ref }: Props) {
         ]}
         onAccessibilityAction={(e) => commit(e.nativeEvent.actionName === "increment")}
       >
-        {/* 影（ずらした紺の板） */}
-        <View
-          pointerEvents="none"
-          style={{ position: "absolute", top: 7, left: 7, right: -7, bottom: -7, borderRadius: 32, backgroundColor: COLORS.ink }}
-        />
-        <View
-          style={{
-            flex: 1,
-            borderRadius: 32,
-            borderWidth: 3,
-            borderColor: COLORS.ink,
-            backgroundColor: question.color,
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-            gap: 20,
-          }}
-        >
-          <Text className="text-7xl" accessibilityElementsHidden importantForAccessibility="no">
-            {question.emoji}
-          </Text>
-          <View className="items-center">
-            <Text className="text-center text-[30px] font-bold leading-[42px] text-ink">{line1}</Text>
-            {line2 ? <Text className="text-center text-[30px] font-bold leading-[42px] text-ink">{line2}</Text> : null}
+        <Animated.View key={question.id} entering={entering} style={{ flex: 1 }}>
+          {/* 影（ずらした紺の板） */}
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              top: 7,
+              left: 7,
+              right: -7,
+              bottom: -7,
+              borderRadius: 32,
+              backgroundColor: COLORS.ink,
+            }}
+          />
+          <View
+            style={{
+              flex: 1,
+              borderRadius: 32,
+              borderWidth: 3,
+              borderColor: COLORS.ink,
+              backgroundColor: question.color,
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 24,
+              gap: 20,
+            }}
+          >
+            <Text className="text-7xl" accessibilityElementsHidden importantForAccessibility="no">
+              {question.emoji}
+            </Text>
+            <View className="items-center">
+              <Text className="text-center text-[30px] font-bold leading-[42px] text-ink">{line1}</Text>
+              {line2 ? (
+                <Text className="text-center text-[30px] font-bold leading-[42px] text-ink">{line2}</Text>
+              ) : null}
+            </View>
           </View>
-        </View>
 
-        {/* カードが向かう側にスタンプが出る（左にはじけば左上に No!、右なら右上に Yes!）。
+          {/* カードが向かう側にスタンプが出る（左にはじけば左上に No!、右なら右上に Yes!）。
             下のボタンの並び（左 No! / 右 Yes!）ともそろえている */}
-        <Animated.View
-          pointerEvents="none"
-          style={[{ position: "absolute", top: 28, right: 22, transform: [{ rotate: "12deg" }] }, yesStyle]}
-        >
-          <Stamp label="Yes!" color={COLORS.sea} />
-        </Animated.View>
-        <Animated.View
-          pointerEvents="none"
-          style={[{ position: "absolute", top: 28, left: 22, transform: [{ rotate: "-12deg" }] }, noStyle]}
-        >
-          <Stamp label="No!" color={COLORS.coralInk} />
+          <Animated.View
+            pointerEvents="none"
+            style={[{ position: "absolute", top: 28, right: 22, transform: [{ rotate: "12deg" }] }, yesStyle]}
+          >
+            <Stamp label="Yes!" color={COLORS.sea} />
+          </Animated.View>
+          <Animated.View
+            pointerEvents="none"
+            style={[{ position: "absolute", top: 28, left: 22, transform: [{ rotate: "-12deg" }] }, noStyle]}
+          >
+            <Stamp label="No!" color={COLORS.coralInk} />
+          </Animated.View>
         </Animated.View>
       </Animated.View>
     </GestureDetector>
@@ -171,7 +183,16 @@ export function SwipeCard({ question, onAnswer, ref }: Props) {
 
 function Stamp({ label, color }: { label: string; color: string }) {
   return (
-    <View style={{ borderWidth: 4, borderColor: color, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 4, backgroundColor: COLORS.white }}>
+    <View
+      style={{
+        borderWidth: 4,
+        borderColor: color,
+        borderRadius: 14,
+        paddingHorizontal: 14,
+        paddingVertical: 4,
+        backgroundColor: COLORS.white,
+      }}
+    >
       <Text className="text-[30px] font-bold" style={{ color }}>
         {label}
       </Text>

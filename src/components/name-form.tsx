@@ -61,8 +61,17 @@ export function NameForm({ title, description, submitLabel, loading, error, onSu
         style={Platform.OS === "web" ? { fontFamily: FONT_WEB, fontWeight: "500" } : { fontFamily: FONT_BODY_NATIVE }}
         placeholderTextColor={COLORS.inkFaint}
       />
-      {error ? <Text className="text-sm font-bold text-coral-ink">{error}</Text> : null}
+      {error ? (
+        <Text
+          className="text-sm font-bold text-coral-ink"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+        >
+          {error}
+        </Text>
+      ) : null}
       <Button label={submitLabel} onPress={submit} disabled={!valid} loading={loading} />
+      {!valid ? <Text className="text-center text-xs text-ink-soft">なまえを入れると押せるよ</Text> : null}
       <Text className="text-center text-xs leading-5 text-ink-soft">
         進むと
         <Link href="/terms" onPress={onLeave} className="text-ink-soft underline">

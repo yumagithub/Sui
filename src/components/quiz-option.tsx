@@ -4,6 +4,7 @@ import { Pressable, View } from "react-native";
 import { Text } from "@/components/text";
 import { COLORS } from "@/constants/colors";
 
+import { focusRing } from "./button";
 import { Sticker } from "./sticker";
 
 type Props = {
@@ -23,13 +24,16 @@ export function QuizOption({ emoji, label, selected, hint, onPress }: Props) {
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       pressRetentionOffset={16}
+      style={focusRing}
       accessibilityRole="button"
       accessibilityLabel={hint ? `${label}（${hint}）` : label}
       accessibilityState={{ selected }}
     >
       <Sticker color={selected ? COLORS.seaTint : COLORS.white} radius={20} offset={4} pressed={pressed}>
         <View className="min-h-16 flex-row items-center gap-4 px-5 py-4">
-          <Text className="text-3xl">{emoji}</Text>
+          <Text className="text-3xl" accessibilityElementsHidden importantForAccessibility="no">
+            {emoji}
+          </Text>
           <View className="flex-1 gap-0.5">
             <Text className="text-[17px] font-bold text-ink">{label}</Text>
             {hint ? <Text className="text-xs font-bold text-sea-ink">{hint}</Text> : null}

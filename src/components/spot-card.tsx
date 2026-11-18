@@ -35,8 +35,6 @@ export type SpotSummary = {
   lng?: number | null;
 };
 
-
-
 function budgetLabel(yen: number | null) {
   if (yen === null) return "予算？";
   if (yen === 0) return "無料";
@@ -50,7 +48,13 @@ function distanceLabel(m: number) {
 function Badge({ icon, label }: { icon: IconName; label: string }) {
   return (
     <View className="flex-row items-center gap-1 rounded-full bg-sun-tint px-2.5 py-1">
-      <Ionicons name={icon} size={13} color={COLORS.inkSoft} />
+      <Ionicons
+        name={icon}
+        size={13}
+        color={COLORS.inkSoft}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
       <Text className="text-xs font-bold text-ink-soft">{label}</Text>
     </View>
   );
@@ -76,7 +80,9 @@ export function SpotCard({ spot, index, showDistance = false, selected = false, 
     () =>
       reduceMotion
         ? FadeIn.duration(200)
-        : FadeInDown.duration(CARD_ENTER_MS).delay(index * CARD_STAGGER_MS).easing(EASE_OUT),
+        : FadeInDown.duration(CARD_ENTER_MS)
+            .delay(index * CARD_STAGGER_MS)
+            .easing(EASE_OUT),
     [index, reduceMotion],
   );
 
@@ -93,7 +99,13 @@ export function SpotCard({ spot, index, showDistance = false, selected = false, 
           />
         ) : (
           <View className={`h-28 items-center justify-center border-b-2 border-ink ${category.bg}`}>
-            <Ionicons name={category.icon} size={40} color={category.fg} />
+            <Ionicons
+              name={category.icon}
+              size={40}
+              color={category.fg}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
           </View>
         )}
 
@@ -104,7 +116,9 @@ export function SpotCard({ spot, index, showDistance = false, selected = false, 
             </Text>
             <Text className="text-xs text-ink-soft">{spot.municipality}</Text>
             {selected ? (
-              <Text className="ml-auto rounded-full bg-sea-ink px-2 py-0.5 text-xs font-bold text-white">あなたの票</Text>
+              <Text className="ml-auto rounded-full bg-sea-ink px-2 py-0.5 text-xs font-bold text-white">
+                あなたの票
+              </Text>
             ) : spot.relaxed ? (
               <Text className="ml-auto text-xs font-bold text-coral-ink">条件ゆるめ</Text>
             ) : null}
