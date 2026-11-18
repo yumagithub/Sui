@@ -12,3 +12,6 @@ export default function NotFound() {
     />
   );
 }
+
+// Web 版のタイトルとリンクのプレビュー
+export { generateMetadata } from "@/lib/metadata";

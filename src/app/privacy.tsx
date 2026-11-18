@@ -70,3 +70,6 @@ export default function Privacy() {
     />
   );
 }
+
+// Web 版のタイトルとリンクのプレビュー
+export { generateMetadata } from "@/lib/metadata";

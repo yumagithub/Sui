@@ -71,7 +71,7 @@ export default function Home() {
           // はじめての人向けに、使い方を3つだけ
           <View className="gap-3 rounded-2xl bg-white p-5">
             {[
-              "条件をタップでえらぶと、候補が3つ出る",
+              "5つの質問に答えると、行き先の候補が3つ出る",
               "リンクを送って、友達と投票",
               "決まったら、Googleマップでそのまま出発",
             ].map((step, i) => (
@@ -87,7 +87,8 @@ export default function Home() {
       </ScrollView>
 
       <View className="gap-3 px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
-        <Button label="行き先を決める" onPress={() => router.push("/new")} />
+        <Button label="診断で行き先を決める" onPress={() => router.push("/quiz")} />
+        <Button label="条件でえらぶ" variant="secondary" onPress={() => router.push("/new")} />
         <View className="flex-row justify-center gap-4">
           <Link href="/terms" className="text-xs text-slate-400">
             利用規約
@@ -100,3 +101,6 @@ export default function Home() {
     </View>
   );
 }
+
+// Web 版のタイトルとリンクのプレビュー
+export { generateMetadata } from "@/lib/metadata";

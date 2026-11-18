@@ -24,6 +24,9 @@ export default function RootLayout() {
             <Stack.Screen name="new" options={{ title: "条件をえらぶ" }} />
             <Stack.Screen name="picks" options={{ title: "この3つはどう？" }} />
             <Stack.Screen name="o/[code]" options={{ title: "どこ行く？" }} />
+            <Stack.Screen name="quiz/index" options={{ title: "行き先診断" }} />
+            <Stack.Screen name="quiz/result" options={{ title: "診断の結果" }} />
+            <Stack.Screen name="t/[type]" options={{ title: "行き先診断" }} />
             <Stack.Screen name="terms" options={{ title: "利用規約" }} />
             <Stack.Screen name="privacy" options={{ title: "プライバシーポリシー" }} />
             <Stack.Screen name="+not-found" options={{ title: "見つからない" }} />

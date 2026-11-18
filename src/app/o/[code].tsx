@@ -272,3 +272,6 @@ export default function OutingVote() {
     </View>
   );
 }
+
+// Web 版のタイトルとリンクのプレビュー
+export { generateMetadata } from "@/lib/metadata";

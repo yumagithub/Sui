@@ -1,25 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ScrollView, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AskFriendsButton } from "@/components/ask-friends";
 import { Button } from "@/components/button";
-import { Loading, Problem } from "@/components/state-view";
-import { NameSheet } from "@/components/name-form";
 import { SpotCard } from "@/components/spot-card";
-import { CaptchaCancelledError, useEnsureSession } from "@/lib/auth";
-import { fromParams, toPickArgs, toStoredConditions, type Conditions } from "@/lib/conditions";
-import { myOutingsQueryKey } from "@/lib/outings";
-import { saveDisplayName } from "@/lib/prefs";
-import { supabase } from "@/lib/supabase";
-
-async function pickCandidates(conditions: Conditions, excludeIds: string[]) {
-  const { data, error } = await supabase.rpc("pick_candidates", toPickArgs(conditions, excludeIds));
-  if (error) throw new Error(error.message);
-  return data;
-}
+import { Loading, Problem } from "@/components/state-view";
+import { fromParams } from "@/lib/conditions";
+import { usePicks } from "@/lib/picks";
 
 export default function Picks() {
   const insets = useSafeAreaInsets();
@@ -28,40 +18,7 @@ export default function Picks() {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- params は描画ごとに新しいオブジェクトになるので文字列で比べる
   const conditions = useMemo(() => fromParams(params), [paramsKey]);
 
-  // これまでに出した候補。引き直すたびに足していく（同じ場所がすぐ戻ってこないように）
-  const [excludeIds, setExcludeIds] = useState<string[]>([]);
-
-  const picks = useQuery({
-    queryKey: ["picks", paramsKey, excludeIds],
-    queryFn: () => pickCandidates(conditions!, excludeIds),
-    enabled: conditions !== null,
-    staleTime: Infinity,
-    retry: 1,
-  });
-
-  // 「この3つで友達に聞く」：名前を聞いて、おでかけを作って投票ページへ
-  const queryClient = useQueryClient();
-  const ensureSession = useEnsureSession();
-  const [nameOpen, setNameOpen] = useState(false);
-  const [sessionFailed, setSessionFailed] = useState(false);
-  const createOuting = useMutation({
-    mutationFn: async (displayName: string) => {
-      await ensureSession();
-      const { data, error } = await supabase.rpc("create_outing", {
-        spot_ids: (picks.data ?? []).map((s) => s.id),
-        display_name: displayName,
-        conditions: conditions ? toStoredConditions(conditions) : {},
-      });
-      if (error || !data?.[0]) throw new Error(error?.message ?? "作れませんでした");
-      await saveDisplayName(displayName);
-      return data[0];
-    },
-    onSuccess: (outing) => {
-      setNameOpen(false);
-      queryClient.invalidateQueries({ queryKey: myOutingsQueryKey });
-      router.push({ pathname: "/o/[code]", params: { code: outing.share_code, share: "1" } });
-    },
-  });
+  const { query: picks, excludeIds, redraw } = usePicks(conditions, paramsKey);
 
   if (!conditions) {
     return (
@@ -76,10 +33,6 @@ export default function Picks() {
 
   const spots = picks.data ?? [];
   const relaxed = spots.some((s) => s.relaxed);
-
-  function redraw() {
-    setExcludeIds((prev) => [...new Set([...prev, ...spots.map((s) => s.id)])]);
-  }
 
   return (
     <View className="flex-1 bg-slate-50">
@@ -124,25 +77,7 @@ export default function Picks() {
       </ScrollView>
 
       <View className="gap-3 border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
-        {sessionFailed ? (
-          <Text className="text-center text-sm text-red-600">うまくつながらなかった。もう一回試してね</Text>
-        ) : null}
-        <Button
-          label="この3つで友達に聞く"
-          onPress={async () => {
-            createOuting.reset();
-            setSessionFailed(false);
-            // 名前の入力より先にログインしておく（CAPTCHA の画面と名前の画面が重ならないように）
-            try {
-              await ensureSession();
-            } catch (e) {
-              if (!(e instanceof CaptchaCancelledError)) setSessionFailed(true);
-              return;
-            }
-            setNameOpen(true);
-          }}
-          disabled={spots.length !== 3 || picks.isFetching}
-        />
+        <AskFriendsButton spotIds={spots.map((s) => s.id)} conditions={conditions} disabled={picks.isFetching} />
         <View className="flex-row gap-3">
           <View className="flex-1">
             <Button
@@ -163,22 +98,9 @@ export default function Picks() {
         </View>
       </View>
 
-      <NameSheet
-        visible={nameOpen}
-        onClose={() => setNameOpen(false)}
-        title="あなたのなまえは？"
-        description="投票ページで、みんなに表示されます"
-        submitLabel="投票ページを作る"
-        loading={createOuting.isPending}
-        error={
-          createOuting.error
-            ? createOuting.error.message.startsWith("ちょっと作りすぎかも")
-              ? createOuting.error.message
-              : "うまく作れなかった。もう一回試してね"
-            : null
-        }
-        onSubmit={(name) => createOuting.mutate(name)}
-      />
     </View>
   );
 }
+
+// Web 版のタイトルとリンクのプレビュー
+export { generateMetadata } from "@/lib/metadata";

@@ -51,3 +51,6 @@ export default function Terms() {
     />
   );
 }
+
+// Web 版のタイトルとリンクのプレビュー
+export { generateMetadata } from "@/lib/metadata";

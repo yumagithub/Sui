@@ -166,3 +166,6 @@ export default function NewOuting() {
     </View>
   );
 }
+
+// Web 版のタイトルとリンクのプレビュー
+export { generateMetadata } from "@/lib/metadata";
