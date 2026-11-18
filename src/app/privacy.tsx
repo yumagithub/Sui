@@ -37,6 +37,7 @@ const SECTIONS: LegalSection[] = [
       "・Cloudflare Turnstile：いたずら防止の確認（端末やブラウザの情報を確認します）",
       "・Expo（EAS Hosting）：Web版の配信",
       "・Open-Meteo：天気の取得",
+      "・OpenStreetMap：スポットの位置などの一部（© OpenStreetMap contributors、ODbL ライセンス）",
       "・Googleマップ：決まった場所を開いたときは、Googleのプライバシーポリシーが適用されます",
     ],
   },

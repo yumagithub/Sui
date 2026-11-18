@@ -30,6 +30,12 @@ const SECTIONS: LegalSection[] = [
     ],
   },
   {
+    title: "データの出典",
+    body: [
+      "スポットの位置などの一部は、OpenStreetMap のデータを使っています（© OpenStreetMap contributors。データは Open Database License（ODbL）で提供されています）。",
+    ],
+  },
+  {
     title: "サービスの変更・停止",
     body: ["運営は、事前に知らせずに、このサービスの内容を変えたり、止めたりすることがあります。"],
   },
