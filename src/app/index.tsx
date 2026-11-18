@@ -22,7 +22,7 @@ function OutingRow({ outing }: { outing: MyOuting }) {
     <PressableScale
       onPress={() => router.push({ pathname: "/o/[code]", params: { code: outing.share_code } })}
       accessibilityRole="button"
-      accessibilityLabel={`${formatDate(outing.created_at)}のおでかけ：${
+      accessibilityLabel={`${formatDate(outing.created_at)}の${outing.solo ? "ひとりの" : ""}おでかけ：${
         outing.decidedName ? `${outing.decidedName}に決定` : outing.spotNames.join("、")
       }${outing.needsFeedback ? "（実際に行ったか、まだ答えていません）" : ""}`}
     >
@@ -33,7 +33,7 @@ function OutingRow({ outing }: { outing: MyOuting }) {
               voting ? "bg-coral-tint text-coral-ink" : "bg-sand-deep text-ink-soft"
             }`}
           >
-            {voting ? "投票中" : "決定"}
+            {voting ? "投票中" : outing.solo ? "ひとりで" : "決定"}
           </Text>
           <Text className="text-xs text-ink-soft">{formatDate(outing.created_at)}</Text>
           {outing.needsFeedback ? (
@@ -41,7 +41,9 @@ function OutingRow({ outing }: { outing: MyOuting }) {
           ) : null}
         </View>
         <Text className="text-[15px] font-bold text-ink" numberOfLines={2}>
-          {outing.decidedName ? `決定：${outing.decidedName}` : outing.spotNames.join(" ／ ")}
+          {outing.decidedName
+            ? `${outing.solo ? "行き先" : "決定"}：${outing.decidedName}`
+            : outing.spotNames.join(" ／ ")}
         </Text>
       </View>
     </PressableScale>
@@ -90,7 +92,7 @@ export default function Home() {
         {outings.length > 0 ? (
           <View className="gap-3">
             <Text className="text-[15px] font-bold text-ink" accessibilityRole="header">
-              参加したおでかけ
+              これまでのおでかけ
             </Text>
             {outings.map((o) => (
               <OutingRow key={o.id} outing={o} />

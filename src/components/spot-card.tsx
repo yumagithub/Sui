@@ -66,11 +66,20 @@ type Props = {
   showDistance?: boolean;
   /** 投票画面で、自分が選んだカードを目立たせる */
   selected?: boolean;
+  /** 選んだときのバッジの文字（ひとりモードは「ここに行く」） */
+  selectedLabel?: string;
   /** カードの下に足す中身（票数など） */
   children?: ReactNode;
 };
 
-export function SpotCard({ spot, index, showDistance = false, selected = false, children }: Props) {
+export function SpotCard({
+  spot,
+  index,
+  showDistance = false,
+  selected = false,
+  selectedLabel = "あなたの票",
+  children,
+}: Props) {
   const reduceMotion = useReducedMotion();
   const category = categoryOf(spot.category);
 
@@ -117,7 +126,7 @@ export function SpotCard({ spot, index, showDistance = false, selected = false, 
             <Text className="text-xs text-ink-soft">{spot.municipality}</Text>
             {selected ? (
               <Text className="ml-auto rounded-full bg-sea-ink px-2 py-0.5 text-xs font-bold text-white">
-                あなたの票
+                {selectedLabel}
               </Text>
             ) : spot.relaxed ? (
               <Text className="ml-auto text-xs font-bold text-coral-ink">条件ゆるめ</Text>

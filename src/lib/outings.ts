@@ -31,6 +31,8 @@ export type Outing = {
   created_at: string;
   decided_spot_id: string | null;
   decided_at: string | null;
+  /** group：友達と投票 ／ solo：ひとりで決めた */
+  mode: string;
   candidates: SpotSummary[];
 };
 
@@ -46,7 +48,7 @@ export function useOuting(code: string, me: string | null | undefined) {
       const { data, error } = await supabase
         .from("outings")
         .select(
-          `id, share_code, status, created_by, created_at, decided_spot_id, decided_at, ${CANDIDATES}(position, spot:spots(${SPOT_COLUMNS}))`,
+          `id, share_code, status, mode, created_by, created_at, decided_spot_id, decided_at, ${CANDIDATES}(position, spot:spots(${SPOT_COLUMNS}))`,
         )
         .eq("share_code", code)
         .maybeSingle();
@@ -154,8 +156,16 @@ export function useOutingRealtime(outingId: string | undefined) {
     };
     const channel = supabase
       .channel(`outing-votes-${outingId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `outing_id=eq.${outingId}` }, refresh)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "outings", filter: `id=eq.${outingId}` }, refreshOuting)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "votes", filter: `outing_id=eq.${outingId}` },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "outings", filter: `id=eq.${outingId}` },
+        refreshOuting,
+      )
       .on("system", {}, (message: { extension?: string; status?: string }) => {
         if (message.extension === "postgres_changes" && message.status === "ok") {
           refresh();
@@ -179,6 +189,7 @@ export type MyOuting = {
   decidedName: string | null;
   /** 決定から3時間たっていて、まだ「行った？」に答えていない */
   needsFeedback: boolean;
+  solo: boolean;
 };
 
 /** 自分が参加したおでかけ（新しい順） */
@@ -190,7 +201,7 @@ export function useMyOutings(me: string | null | undefined) {
       const { data, error } = await supabase
         .from("outing_members")
         .select(
-          `joined_at, visit_feedback(went), outing:outings!inner(id, share_code, status, created_at, decided_spot_id, decided_at, ${CANDIDATES}(position, spot:spots(id, name)))`,
+          `joined_at, visit_feedback(went), outing:outings!inner(id, share_code, status, mode, created_at, decided_spot_id, decided_at, ${CANDIDATES}(position, spot:spots(id, name)))`,
         )
         .eq("user_id", me!)
         .order("joined_at", { ascending: false })
@@ -207,6 +218,7 @@ export function useMyOutings(me: string | null | undefined) {
           spotNames: candidates.map((c) => c.spot?.name ?? "（今は見られない場所）"),
           decidedName: decided?.spot?.name ?? null,
           needsFeedback: canAskFeedback(outing.decided_at) && !visit_feedback,
+          solo: outing.mode === "solo",
         };
       });
     },

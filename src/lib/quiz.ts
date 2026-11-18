@@ -1,9 +1,9 @@
 import type { Area, Budget, Conditions, Mood } from "./conditions";
 
 // ---- 質問（Yes! / No! でスワイプ）----
-// 前の答えで次の質問が変わる。場所のあとに3〜5枚（どの答え方でも5枚以内）。
+// 前の答えで次の質問が変わる。場所のあとに4〜6枚（最初の「友達と？」を含む）。
 
-export type QuestionId = "hungry" | "sweet" | "chill" | "party" | "scenery" | "explore" | "outside" | "wallet";
+export type QuestionId = "together" | "hungry" | "sweet" | "chill" | "party" | "scenery" | "explore" | "outside" | "wallet";
 export type SwipeAnswers = Partial<Record<QuestionId, boolean>>;
 
 export type Question = {
@@ -15,6 +15,7 @@ export type Question = {
 };
 
 export const QUESTIONS: Record<QuestionId, Question> = {
+  together: { id: "together", emoji: "🧑‍🤝‍🧑", text: "今日は友達と\n行く？", color: "#FFE1EA" },
   hungry: { id: "hungry", emoji: "🍜", text: "お腹すいてる？", color: "#FFD9C2" },
   sweet: { id: "sweet", emoji: "🍰", text: "甘いもの\n食べたい？", color: "#FFD6E2" },
   chill: { id: "chill", emoji: "🛋️", text: "のんびり\nしゃべりたい？", color: "#FFE9A8" },
@@ -27,6 +28,8 @@ export const QUESTIONS: Record<QuestionId, Question> = {
 
 /** 次に聞く質問（もう聞くことがなければ null） */
 export function nextQuestion(a: SwipeAnswers): QuestionId | null {
+  // 最初に「友達と？」（No! ならひとりモード）
+  if (a.together === undefined) return "together";
   if (a.hungry === undefined) return "hungry";
   if (a.hungry === false) {
     if (a.sweet === undefined) return "sweet";
@@ -47,6 +50,23 @@ export function nextQuestion(a: SwipeAnswers): QuestionId | null {
   const spends = a.hungry === true || a.sweet === true || a.party === true;
   if (spends && a.wallet === undefined) return "wallet";
   return null;
+}
+
+/** ひとりで行くか（「友達と行く？」に No!） */
+export function isSolo(a: SwipeAnswers) {
+  return a.together === false;
+}
+
+/** ひとりのときは聞き方だけ変える（どのタイプにもたどり着けるように、質問の数は同じ） */
+const SOLO_TEXT: Partial<Record<QuestionId, string>> = {
+  party: "思いっきり\n遊びたい？",
+  chill: "のんびり\n過ごしたい？",
+};
+
+export function questionFor(id: QuestionId, a: SwipeAnswers): Question {
+  const q = QUESTIONS[id];
+  const solo = isSolo(a) ? SOLO_TEXT[id] : undefined;
+  return solo ? { ...q, text: solo } : q;
 }
 
 /** いくつ答えたか（進み具合の表示用） */

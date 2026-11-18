@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Platform, ScrollView, View } from "react-native";
 import { Text } from "@/components/text";
@@ -34,7 +34,10 @@ import { outingUrl, shareOuting, type ShareResult } from "@/lib/share";
 function Steps({ current }: { current: number }) {
   const labels = ["友達に送る", "投票を待つ", "決定する"];
   return (
-    <View className="flex-row items-center gap-2" accessibilityLabel={`3つのうち${current + 1}つ目：${labels[current]}`}>
+    <View
+      className="flex-row items-center gap-2"
+      accessibilityLabel={`3つのうち${current + 1}つ目：${labels[current]}`}
+    >
       {labels.map((label, i) => (
         <View key={label} className="flex-1 flex-row items-center gap-1.5">
           <View
@@ -210,9 +213,11 @@ export default function OutingVote() {
   if (decidedSpot) {
     return (
       <View className="flex-1 bg-sand">
+        {outing.data.mode === "solo" ? <Stack.Screen options={{ title: "今日の行き先" }} /> : null}
         <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="px-5 pb-8 pt-4">
           <DecidedView
             spot={decidedSpot}
+            solo={outing.data.mode === "solo"}
             voterNames={allVotes.filter((v) => v.spot_id === decidedSpot.id).map((v) => nameOf(v.user_id))}
             feedback={
               askFeedback
@@ -235,7 +240,11 @@ export default function OutingVote() {
   const othersVoted = allVotes.some((v) => v.user_id !== myId);
   const creatorStep = !othersJoined ? 0 : !othersVoted ? 1 : 2;
   const statusText = isCreator
-    ? ["まずはリンクを友達に送ろう", "友達の投票を待ってるよ。自分も投票できるよ", "票が集まってきた！ 決まったら「ここに決定！」"][creatorStep]
+    ? [
+        "まずはリンクを友達に送ろう",
+        "友達の投票を待ってるよ。自分も投票できるよ",
+        "票が集まってきた！ 決まったら「ここに決定！」",
+      ][creatorStep]
     : myVote
       ? "投票したよ。決まったら、この画面が切り替わるよ"
       : "行きたいところをタップして投票してね";

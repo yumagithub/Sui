@@ -18,10 +18,12 @@ type Props = {
   disabled?: boolean;
   /** 診断から作ったときのタイプなど、おでかけの条件に一緒に残したいもの */
   extraConditions?: Record<string, string>;
+  /** ひとりのときは文字だけのリンクにする */
+  variant?: "primary" | "quiet";
 };
 
 /** 「この3つで友達に聞く」：名前を聞いて、おでかけを作って投票ページへ */
-export function AskFriendsButton({ spotIds, conditions, disabled, extraConditions }: Props) {
+export function AskFriendsButton({ spotIds, conditions, disabled, extraConditions, variant = "primary" }: Props) {
   const queryClient = useQueryClient();
   const ensureSession = useEnsureSession();
   const [nameOpen, setNameOpen] = useState(false);
@@ -52,7 +54,8 @@ export function AskFriendsButton({ spotIds, conditions, disabled, extraCondition
         <Text className="text-center text-sm text-coral-ink">うまくつながらなかった。もう一回試してね</Text>
       ) : null}
       <Button
-        label="この3つで友達に聞く"
+        label={variant === "quiet" ? "友達に聞く" : "この3つで友達に聞く"}
+        variant={variant}
         onPress={async () => {
           createOuting.reset();
           setSessionFailed(false);

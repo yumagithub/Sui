@@ -84,6 +84,7 @@ export type Database = {
           decided_at: string | null
           decided_spot_id: string | null
           id: string
+          mode: string
           share_code: string
           status: string
         }
@@ -94,6 +95,7 @@ export type Database = {
           decided_at?: string | null
           decided_spot_id?: string | null
           id?: string
+          mode?: string
           share_code?: string
           status?: string
         }
@@ -104,6 +106,7 @@ export type Database = {
           decided_at?: string | null
           decided_spot_id?: string | null
           id?: string
+          mode?: string
           share_code?: string
           status?: string
         }
@@ -252,6 +255,13 @@ export type Database = {
     Functions: {
       create_outing: {
         Args: { conditions?: Json; display_name: string; spot_ids: string[] }
+        Returns: {
+          id: string
+          share_code: string
+        }[]
+      }
+      create_solo_outing: {
+        Args: { chosen_spot_id: string; conditions?: Json; spot_ids: string[] }
         Returns: {
           id: string
           share_code: string

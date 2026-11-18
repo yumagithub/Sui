@@ -15,8 +15,9 @@ import { originOf, toParams, type Area } from "@/lib/conditions";
 import { getCurrentLocation, LocationDeniedError } from "@/lib/location";
 import {
   answeredCount,
+  isSolo,
   nextQuestion,
-  QUESTIONS,
+  questionFor,
   toConditions,
   typeFromAnswers,
   type QuestionId,
@@ -24,8 +25,8 @@ import {
 } from "@/lib/quiz";
 import { fetchWeather } from "@/lib/weather";
 
-/** 場所のあとに出るカードは多くて5枚 */
-const MAX_CARDS = 5;
+/** 場所のあとに出るカードは多くて6枚（「友達と？」を含む） */
+const MAX_CARDS = 6;
 
 function Progress({ step }: { step: number }) {
   return (
@@ -69,7 +70,11 @@ export default function Quiz() {
     if (!area || current !== null) return;
     router.replace({
       pathname: "/quiz/result",
-      params: { ...toParams(toConditions(area, answers, weather.data?.isRainy ?? false)), type: typeFromAnswers(answers) },
+      params: {
+        ...toParams(toConditions(area, answers, weather.data?.isRainy ?? false)),
+        type: typeFromAnswers(answers),
+        ...(isSolo(answers) ? { mode: "solo" } : {}),
+      },
     });
   }, [area, current, answers, weather.data?.isRainy]);
 
@@ -185,7 +190,7 @@ export default function Quiz() {
             transform: [{ rotate: "4deg" }, { translateY: 10 }],
           }}
         />
-        <SwipeCard ref={card} question={QUESTIONS[current]} onAnswer={answer} />
+        <SwipeCard ref={card} question={questionFor(current, answers)} onAnswer={answer} />
       </View>
 
       <View className="gap-2 px-5">
