@@ -36,6 +36,7 @@ const SECTIONS: LegalSection[] = [
       "・Supabase：データの保存とログイン（東京リージョン）",
       "・Cloudflare Turnstile：いたずら防止の確認（端末やブラウザの情報を確認します）",
       "・Expo（EAS Hosting）：Web版の配信",
+      "・Google Fonts：Web版の文字（フォント）の読み込み",
       "・Open-Meteo：天気の取得",
       "・OpenStreetMap：スポットの位置などの一部（© OpenStreetMap contributors、ODbL ライセンス）",
       "・Googleマップ：決まった場所を開いたときは、Googleのプライバシーポリシーが適用されます",

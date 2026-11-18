@@ -1,46 +1,67 @@
 import type { Area, Budget, Conditions, Mood } from "./conditions";
 
-// ---- 質問 ----
+// ---- 質問（Yes! / No! でスワイプ）----
+// 前の答えで次の質問が変わる。場所のあとに3〜5枚（どの答え方でも5枚以内）。
 
-export type Hunger = "starving" | "sweet" | "fine";
-export type Vibe = "chill" | "lively" | "scenery" | "explore";
-export type Place = "outside" | "inside" | "either";
+export type QuestionId = "hungry" | "sweet" | "chill" | "party" | "scenery" | "explore" | "outside" | "wallet";
+export type SwipeAnswers = Partial<Record<QuestionId, boolean>>;
 
-export type QuizAnswers = {
-  area: Area;
-  hunger: Hunger;
-  vibe: Vibe;
-  place: Place;
-  budget: Budget;
+export type Question = {
+  id: QuestionId;
+  emoji: string;
+  text: string;
+  /** カードの地の色 */
+  color: string;
 };
 
-type Option<T> = { value: T; emoji: string; label: string };
+export const QUESTIONS: Record<QuestionId, Question> = {
+  hungry: { id: "hungry", emoji: "🍜", text: "お腹すいてる？", color: "#FFD9C2" },
+  sweet: { id: "sweet", emoji: "🍰", text: "甘いもの\n食べたい？", color: "#FFD6E2" },
+  chill: { id: "chill", emoji: "🛋️", text: "のんびり\nしゃべりたい？", color: "#FFE9A8" },
+  party: { id: "party", emoji: "🎉", text: "みんなで\nわいわいしたい？", color: "#E4DBFF" },
+  scenery: { id: "scenery", emoji: "🌅", text: "いい景色が\n見たい？", color: "#C6E9FF" },
+  explore: { id: "explore", emoji: "🧭", text: "行ったことない\nとこ行きたい？", color: "#C9F2DA" },
+  outside: { id: "outside", emoji: "🌬️", text: "外に出たい\n気分？", color: "#D9F0FF" },
+  wallet: { id: "wallet", emoji: "💰", text: "今日はお財布に\n余裕ある？", color: "#FFF1D6" },
+};
 
-export const HUNGER_OPTIONS: Option<Hunger>[] = [
-  { value: "starving", emoji: "🍜", label: "ペコペコ！がっつり食べたい" },
-  { value: "sweet", emoji: "🍰", label: "甘いものならいける" },
-  { value: "fine", emoji: "🙆", label: "まだ平気" },
-];
+/** 次に聞く質問（もう聞くことがなければ null） */
+export function nextQuestion(a: SwipeAnswers): QuestionId | null {
+  if (a.hungry === undefined) return "hungry";
+  if (a.hungry === false) {
+    if (a.sweet === undefined) return "sweet";
+    if (a.sweet === true) {
+      if (a.chill === undefined) return "chill";
+    } else {
+      if (a.party === undefined) return "party";
+      if (a.party === false) {
+        if (a.scenery === undefined) return "scenery";
+        if (a.scenery === false && a.explore === undefined) return "explore";
+      }
+    }
+  }
+  // 「開拓」まで来た人には外か中かは聞かない（雨なら屋内を優先するだけ）
+  const reachedExplore = a.scenery === false;
+  if (!reachedExplore && a.outside === undefined) return "outside";
+  // お財布は、お金がかかりやすい ごはん・カフェ・遊ぶ のときだけ聞く
+  const spends = a.hungry === true || a.sweet === true || a.party === true;
+  if (spends && a.wallet === undefined) return "wallet";
+  return null;
+}
 
-export const VIBE_OPTIONS: Option<Vibe>[] = [
-  { value: "chill", emoji: "🛋️", label: "のんびりしたい" },
-  { value: "lively", emoji: "🎉", label: "みんなでわいわい" },
-  { value: "scenery", emoji: "🌅", label: "いい景色が見たい" },
-  { value: "explore", emoji: "🧭", label: "行ったことないとこ開拓" },
-];
+/** いくつ答えたか（進み具合の表示用） */
+export function answeredCount(a: SwipeAnswers) {
+  return Object.keys(a).length;
+}
 
-export const PLACE_OPTIONS: Option<Place>[] = [
-  { value: "outside", emoji: "🌬️", label: "外で風を感じたい" },
-  { value: "inside", emoji: "🏠", label: "中でまったり" },
-  { value: "either", emoji: "🤷", label: "どっちでも" },
-];
-
-export const BUDGET_QUIZ_OPTIONS: Option<Budget>[] = [
-  { value: "1000", emoji: "🪙", label: "〜1,000円" },
-  { value: "3000", emoji: "💴", label: "〜3,000円" },
-  { value: "5000", emoji: "💰", label: "〜5,000円" },
-  { value: "any", emoji: "✨", label: "気にしない" },
-];
+/** 答えからタイプを決める（答え終わってから呼ぶ） */
+export function typeFromAnswers(a: SwipeAnswers): QuizTypeId {
+  if (a.hungry) return "hungry-explorer";
+  if (a.sweet) return a.chill ? "cafe-chiller" : "sweets-hopper";
+  if (a.party) return "party-player";
+  if (a.scenery) return a.outside ? "sunset-hunter" : "photo-seeker";
+  return a.explore ? "new-frontier" : "nature-reset";
+}
 
 // ---- タイプ ----
 
@@ -61,6 +82,8 @@ export type QuizType = {
   description: string;
   /** 結果の見出しの背景（NativeWind のクラス） */
   bg: string;
+  /** 結果のステッカーの色 */
+  color: string;
   /** 候補を出すときの気分 */
   moods: Mood[];
 };
@@ -68,6 +91,7 @@ export type QuizType = {
 export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   "hungry-explorer": {
     id: "hungry-explorer",
+    color: "#FFB98A",
     emoji: "🍜",
     name: "腹ペコ探検家",
     description: "まずはお腹から。うまい店を見つけたら、その日はもう勝ち。",
@@ -76,6 +100,7 @@ export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   },
   "sweets-hopper": {
     id: "sweets-hopper",
+    color: "#FFB8CC",
     emoji: "🍰",
     name: "甘いもの巡り",
     description: "甘いものは別腹。おしゃべりしながら、はしごしよう。",
@@ -84,6 +109,7 @@ export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   },
   "cafe-chiller": {
     id: "cafe-chiller",
+    color: "#FFE07A",
     emoji: "☕",
     name: "カフェでまったり派",
     description: "急がない、焦らない。いい席でゆっくり話すのがいちばん。",
@@ -92,6 +118,7 @@ export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   },
   "party-player": {
     id: "party-player",
+    color: "#C9B8FF",
     emoji: "🎳",
     name: "わいわい遊び人",
     description: "体を動かして、笑って、気づいたら夕方。",
@@ -100,6 +127,7 @@ export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   },
   "sunset-hunter": {
     id: "sunset-hunter",
+    color: "#FFAE8F",
     emoji: "🌅",
     name: "夕日ハンター",
     description: "空の色が変わる時間を、いちばんいい場所で。",
@@ -108,6 +136,7 @@ export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   },
   "nature-reset": {
     id: "nature-reset",
+    color: "#9FE6BD",
     emoji: "🌿",
     name: "自然でリセット派",
     description: "海と緑で深呼吸。スマホは少しおやすみ。",
@@ -116,6 +145,7 @@ export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   },
   "photo-seeker": {
     id: "photo-seeker",
+    color: "#9DD6FF",
     emoji: "📸",
     name: "映えスポット狙い",
     description: "今日の一枚を撮りにいこう。景色もカフェも全部素材。",
@@ -124,6 +154,7 @@ export const QUIZ_TYPES: Record<QuizTypeId, QuizType> = {
   },
   "new-frontier": {
     id: "new-frontier",
+    color: "#8FE3D6",
     emoji: "🧭",
     name: "新しいとこ開拓者",
     description: "いつもの場所はおやすみ。まだ知らない中部へ。",
@@ -136,33 +167,19 @@ export function isQuizTypeId(value: string | undefined): value is QuizTypeId {
   return !!value && value in QUIZ_TYPES;
 }
 
-/** お腹の空き具合と気分（と外か中か）からタイプを決める */
-export function typeOf(answers: Pick<QuizAnswers, "hunger" | "vibe" | "place">): QuizTypeId {
-  if (answers.hunger === "starving") return "hungry-explorer";
-  if (answers.hunger === "sweet") return answers.vibe === "chill" ? "cafe-chiller" : "sweets-hopper";
-  switch (answers.vibe) {
-    case "chill":
-      return "nature-reset";
-    case "lively":
-      return "party-player";
-    case "scenery":
-      return answers.place === "outside" ? "sunset-hunter" : "photo-seeker";
-    case "explore":
-      return "new-frontier";
-  }
-}
-
 /**
  * 答えを、候補を出すときの条件に置き換える。
  * 沖縄は車社会なので、診断では車ありとして出す（駐車場ありを優先）。
+ * 外に出たくなければ屋内を優先。外に出たくても、雨なら屋内を優先する。
  */
-export function toConditions(answers: QuizAnswers, isRainy: boolean): Conditions {
-  const type = QUIZ_TYPES[typeOf(answers)];
+export function toConditions(area: Area, answers: SwipeAnswers, isRainy: boolean): Conditions {
+  const type = QUIZ_TYPES[typeFromAnswers(answers)];
+  const budget: Budget = answers.wallet === false ? "1000" : "any";
   return {
-    area: answers.area,
+    area,
     hasCar: true,
-    budget: answers.budget,
+    budget,
     moods: type.moods,
-    preferIndoor: answers.place === "inside" || (answers.place === "either" && isRainy),
+    preferIndoor: answers.outside === false || isRainy,
   };
 }

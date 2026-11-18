@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/components/text";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -35,7 +36,7 @@ export default function Picks() {
   const relaxed = spots.some((s) => s.relaxed);
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-sand">
       {/* iOS 26 以降はヘッダーが半透明で中身の上に重なるので、ヘッダーの高さ分を自動でずらす */}
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-4 px-5 pb-8 pt-4">
         {picks.isPending ? (
@@ -58,7 +59,7 @@ export default function Picks() {
           <>
             {relaxed ? (
               <Animated.View entering={FadeIn.duration(200)}>
-                <Text className="text-sm text-amber-700">
+                <Text className="text-sm font-bold text-coral-ink">
                   ぴったりが少なかったので、条件をちょっとゆるめたよ
                 </Text>
               </Animated.View>
@@ -76,25 +77,15 @@ export default function Picks() {
         )}
       </ScrollView>
 
-      <View className="gap-3 border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
+      <View className="gap-1 border-t-2 border-ink bg-sand px-5 pt-4" style={{ paddingBottom: insets.bottom + 8 }}>
         <AskFriendsButton spotIds={spots.map((s) => s.id)} conditions={conditions} disabled={picks.isFetching} />
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Button
-              label="条件を変える"
-              variant="secondary"
-              onPress={() => (router.canGoBack() ? router.back() : router.replace("/new"))}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              label="引き直す"
-              variant="secondary"
-              onPress={redraw}
-              loading={picks.isFetching}
-              disabled={spots.length === 0}
-            />
-          </View>
+        <View className="flex-row justify-center gap-6">
+          <Button label="引き直す" variant="quiet" onPress={redraw} disabled={spots.length === 0 || picks.isFetching} />
+          <Button
+            label="条件を変える"
+            variant="quiet"
+            onPress={() => (router.canGoBack() ? router.back() : router.replace("/new"))}
+          />
         </View>
       </View>
 

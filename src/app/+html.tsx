@@ -15,7 +15,14 @@ export default function Root({ children }: PropsWithChildren) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="theme-color" content="#0d9488" />
+        <meta name="theme-color" content="#FFF6E8" />
+        {/* 丸いフォント。Google Fonts は使う文字の分だけ読み込むので、アプリに同梱するより軽い */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap"
+        />
         <ScrollViewStyleReset />
         {headNodes}
       </head>

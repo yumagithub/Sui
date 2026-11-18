@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState, type ReactNode } from "react";
-import { ActivityIndicator, ScrollView, Switch, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Switch, View } from "react-native";
+import { Text } from "@/components/text";
+import { COLORS } from "@/constants/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
@@ -22,7 +24,9 @@ import { fetchWeather } from "@/lib/weather";
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <View className="gap-3">
-      <Text className="text-sm font-bold text-slate-500">{title}</Text>
+      <Text className="text-[17px] font-bold text-ink" accessibilityRole="header">
+        {title}
+      </Text>
       <View className="flex-row flex-wrap gap-2">{children}</View>
     </View>
   );
@@ -84,7 +88,7 @@ export default function NewOuting() {
   }
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-sand">
       {/* iOS 26 以降はヘッダーが半透明で中身の上に重なるので、ヘッダーの高さ分を自動でずらす */}
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-7 px-5 pb-8 pt-4">
         <View className="gap-3">
@@ -104,7 +108,7 @@ export default function NewOuting() {
               />
             ))}
           </Section>
-          {locationMessage ? <Text className="text-sm text-amber-700">{locationMessage}</Text> : null}
+          {locationMessage ? <Text className="text-sm font-bold text-coral-ink">{locationMessage}</Text> : null}
         </View>
 
         <Section title="車は？">
@@ -131,36 +135,36 @@ export default function NewOuting() {
           ))}
         </Section>
 
-        <View className="flex-row items-center gap-3 rounded-2xl bg-white p-4">
+        <View className="flex-row items-center gap-3 rounded-2xl border-2.5 border-ink bg-white p-4">
           <View className="flex-1 gap-0.5">
             {!origin ? (
-              <Text className="text-sm text-slate-500">場所をえらぶと、天気を見るよ</Text>
+              <Text className="text-sm text-ink-soft">場所をえらぶと、天気を見るよ</Text>
             ) : weather.isPending ? (
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" />
-                <Text className="text-sm text-slate-500">天気を確認中…</Text>
+                <Text className="text-sm text-ink-soft">天気を確認中…</Text>
               </View>
             ) : weather.data ? (
-              <Text className="text-sm text-slate-700">
+              <Text className="text-sm text-ink">
                 {weather.data.emoji} {weather.data.label}
                 {weather.data.temperature !== null ? ` ${Math.round(weather.data.temperature)}℃` : ""}
                 {weather.data.isRainy ? "・雨っぽい" : ""}
               </Text>
             ) : (
-              <Text className="text-sm text-slate-500">天気はわからなかった</Text>
+              <Text className="text-sm text-ink-soft">天気はわからなかった</Text>
             )}
-            <Text className="text-base font-semibold text-slate-900">屋内を優先</Text>
+            <Text className="text-base font-bold text-ink">屋内を優先</Text>
           </View>
           <Switch
             value={preferIndoor}
             onValueChange={setIndoorOverride}
-            trackColor={{ true: "#0d9488" }}
+            trackColor={{ true: COLORS.sea }}
             accessibilityLabel="屋内を優先"
           />
         </View>
       </ScrollView>
 
-      <View className="border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
+      <View className="border-t-2 border-ink bg-sand px-5 pt-4" style={{ paddingBottom: insets.bottom + 12 }}>
         <Button label={area ? "3つ出す" : "まず場所をえらんでね"} onPress={submit} disabled={!area} />
       </View>
     </View>

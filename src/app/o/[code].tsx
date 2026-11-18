@@ -1,7 +1,9 @@
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Platform, ScrollView, Text, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
+import { Text } from "@/components/text";
+import { COLORS } from "@/constants/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/button";
@@ -27,6 +29,34 @@ import {
 } from "@/lib/outings";
 import { saveDisplayName } from "@/lib/prefs";
 import { outingUrl, shareOuting, type ShareResult } from "@/lib/share";
+
+/** 作った人向けの進み具合：①送る ②待つ ③決定 */
+function Steps({ current }: { current: number }) {
+  const labels = ["友達に送る", "投票を待つ", "決定する"];
+  return (
+    <View className="flex-row items-center gap-2" accessibilityLabel={`3つのうち${current + 1}つ目：${labels[current]}`}>
+      {labels.map((label, i) => (
+        <View key={label} className="flex-1 flex-row items-center gap-1.5">
+          <View
+            className="h-7 w-7 items-center justify-center rounded-full border-2 border-ink"
+            style={{ backgroundColor: i < current ? COLORS.sea : i === current ? COLORS.sun : COLORS.white }}
+          >
+            <Text className="text-xs font-bold" style={{ color: i < current ? COLORS.white : COLORS.ink }}>
+              {i < current ? "✓" : i + 1}
+            </Text>
+          </View>
+          <Text
+            className="flex-1 text-xs font-bold"
+            style={{ color: i === current ? COLORS.ink : COLORS.inkSoft }}
+            numberOfLines={1}
+          >
+            {label}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export default function OutingVote() {
   const insets = useSafeAreaInsets();
@@ -131,7 +161,7 @@ export default function OutingVote() {
     const notFound = (join.error as { code?: string } | null)?.code === "P0002";
     return (
       <ScrollView
-        className="flex-1 bg-slate-50"
+        className="flex-1 bg-sand"
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         contentContainerClassName="px-5 pt-8"
@@ -172,7 +202,7 @@ export default function OutingVote() {
   }
   if (decidedSpot) {
     return (
-      <View className="flex-1 bg-slate-50">
+      <View className="flex-1 bg-sand">
         <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="px-5 pb-8 pt-4">
           <DecidedView
             spot={decidedSpot}
@@ -193,19 +223,30 @@ export default function OutingVote() {
     );
   }
 
+  // 作った人以外が参加・投票しているか（作った人の「次にすること」を決める）
+  const othersJoined = (members.data?.length ?? 1) > 1;
+  const othersVoted = allVotes.some((v) => v.user_id !== myId);
+  const creatorStep = !othersJoined ? 0 : !othersVoted ? 1 : 2;
+  const statusText = isCreator
+    ? ["まずはリンクを友達に送ろう", "友達の投票を待ってるよ。自分も投票できるよ", "票が集まってきた！ 決まったら「ここに決定！」"][creatorStep]
+    : myVote
+      ? "投票したよ。決まったら、この画面が切り替わるよ"
+      : "行きたいところをタップして投票してね";
+
   return (
-    <View className="flex-1 bg-slate-50">
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-4 px-5 pb-8 pt-4">
-        <View className="gap-1">
-          <Text className="text-xl font-bold text-slate-900">どこ行く？</Text>
-          <Text className="text-sm text-slate-500">
-            {voting
-              ? myVote
-                ? "投票したよ。ほかをタップすると変えられる"
-                : "行きたいところをタップして投票してね"
-              : "投票はおわったよ"}
-            {members.data ? `（参加 ${members.data.length}人）` : ""}
-          </Text>
+    <View className="flex-1 bg-sand">
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-5 px-5 pb-8 pt-4">
+        <View className="gap-3">
+          {isCreator ? <Steps current={creatorStep} /> : null}
+          <View className="gap-1">
+            <Text className="text-[26px] font-bold text-ink" accessibilityRole="header">
+              どこ行く？
+            </Text>
+            <Text className="text-[15px] leading-6 text-ink-soft" accessibilityLiveRegion="polite">
+              {statusText}
+              {members.data ? `（参加 ${members.data.length}人）` : ""}
+            </Text>
+          </View>
         </View>
 
         {outing.data.candidates.map((spot: SpotSummary, i) => {
@@ -233,29 +274,34 @@ export default function OutingVote() {
           );
         })}
 
-        {castVote.isError ? <Text className="text-sm text-red-600">投票できなかった。もう一回タップしてね</Text> : null}
+        {castVote.isError ? (
+          <Text className="text-sm font-bold text-coral-ink">投票できなかった。もう一回タップしてね</Text>
+        ) : null}
       </ScrollView>
 
-      <View className="gap-2 border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
+      <View className="gap-1 border-t-2 border-ink bg-sand px-5 pt-4" style={{ paddingBottom: insets.bottom + 8 }}>
         {shareNote ? (
-          <Text selectable className="text-center text-sm text-teal-700">
+          <Text selectable className="pb-1 text-center text-sm font-bold text-sea-ink">
             {shareNote}
           </Text>
         ) : null}
-        {isCreator && voting ? (
-          <Button
-            label="ここに決定！"
-            onPress={() => {
-              decide.reset();
-              setDecideOpen(true);
-            }}
-          />
-        ) : null}
-        <Button
-          label="友達に送る"
-          variant={share === "1" && !(isCreator && allVotes.length > 0) ? "primary" : "secondary"}
-          onPress={share_}
-        />
+        {/* 主役のボタンは1つ。作った人は、友達が来るまでは「送る」、来たら「決定」 */}
+        {isCreator && voting && othersJoined ? (
+          <>
+            <Button
+              label="ここに決定！"
+              onPress={() => {
+                decide.reset();
+                setDecideOpen(true);
+              }}
+            />
+            <Button label="友達に送る" variant="quiet" onPress={share_} />
+          </>
+        ) : isCreator ? (
+          <Button label="友達に送る" onPress={share_} />
+        ) : (
+          <Button label="ほかの友達にも送る" variant="quiet" onPress={share_} />
+        )}
       </View>
 
       {isCreator && voting ? (

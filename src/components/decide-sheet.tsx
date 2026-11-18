@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/components/text";
 
 import type { SpotSummary } from "./spot-card";
 
@@ -35,12 +36,12 @@ export function DecideSheet({ visible, candidates, counts, loading, error, onCon
 
   return (
     <BottomSheet visible={visible} onClose={close}>
-      <Text className="text-xl font-bold text-slate-900">どこに決める？</Text>
-      <Text className="mt-1 text-sm text-slate-500">
+      <Text className="text-xl font-bold text-ink">どこに決める？</Text>
+      <Text className="mt-1 text-sm text-ink-soft">
         決めると、みんなの画面が切り替わるよ（あとから変えられません）
       </Text>
 
-      <ScrollView className="mt-4" contentContainerClassName="gap-2">
+      <ScrollView className="mt-4" contentContainerClassName="gap-3">
         {candidates.map((spot) => {
           const count = counts[spot.id] ?? 0;
           const isTop = max > 0 && count === max;
@@ -54,28 +55,28 @@ export function DecideSheet({ visible, candidates, counts, loading, error, onCon
               accessibilityLabel={`${spot.name}（${count}票）${isTop ? "いちばん人気" : ""}`}
             >
               <View
-                className={`flex-row items-center gap-3 rounded-2xl border-2 bg-white p-4 ${
-                  isSelected ? "border-teal-600" : "border-transparent"
+                className={`flex-row items-center gap-3 rounded-2xl border-2.5 border-ink p-4 ${
+                  isSelected ? "bg-sea-tint" : "bg-white"
                 }`}
               >
                 <View className="flex-1 gap-1">
                   {isTop ? (
-                    <Text className="self-start rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">
+                    <Text className="self-start rounded-full border-2 border-ink bg-coral px-2 py-0.5 text-xs font-bold text-ink">
                       いちばん人気
                     </Text>
                   ) : null}
-                  <Text className="text-base font-bold text-slate-900" numberOfLines={2}>
+                  <Text className="text-base font-bold text-ink" numberOfLines={2}>
                     {spot.name}
                   </Text>
                 </View>
-                <Text className="text-base font-bold text-slate-700">{count}票</Text>
+                <Text className="text-base font-bold text-ink">{count}票</Text>
               </View>
             </PressableScale>
           );
         })}
       </ScrollView>
 
-      {error ? <Text className="mt-3 text-sm text-red-600">{error}</Text> : null}
+      {error ? <Text className="mt-3 text-sm text-coral-ink">{error}</Text> : null}
       <View className="mt-4">
         <Button
           label={selectedName ? `${selectedName}に決定！` : "場所をえらんでね"}

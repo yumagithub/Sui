@@ -1,13 +1,15 @@
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Platform, ScrollView, Text, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
+import { Text } from "@/components/text";
 import Animated, { FadeIn, FadeInDown, useReducedMotion } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AskFriendsButton } from "@/components/ask-friends";
 import { Button } from "@/components/button";
 import { SpotCard } from "@/components/spot-card";
+import { Sticker } from "@/components/sticker";
 import { Loading, Problem } from "@/components/state-view";
 import { EASE_OUT } from "@/constants/motion";
 import { fromParams } from "@/lib/conditions";
@@ -65,20 +67,27 @@ export default function QuizResult() {
   }
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-sand">
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-4 px-5 pb-8 pt-4">
+        {/* タイプの発表：少し傾けたステッカー。1枚目の候補が最初の画面に見えるよう小さめに */}
         <Animated.View entering={reveal}>
-          <View className={`items-center gap-2 rounded-3xl px-5 py-7 ${type.bg}`}>
-            <Text className="text-sm font-semibold text-slate-600">今日のあなたは…</Text>
-            <Text className="text-6xl">{type.emoji}</Text>
-            <Text className="text-3xl font-bold text-slate-900" accessibilityRole="header">
-              {type.name}
-            </Text>
-            <Text className="text-center text-sm leading-5 text-slate-700">{type.description}</Text>
-          </View>
+          <Sticker color={type.color} radius={24} offset={5} tilt={-2}>
+            <View className="flex-row items-center gap-4 px-5 py-4">
+              <Text className="text-5xl" accessibilityElementsHidden importantForAccessibility="no">
+                {type.emoji}
+              </Text>
+              <View className="flex-1 gap-0.5">
+                <Text className="text-[13px] font-bold text-ink-soft">今日のあなたは…</Text>
+                <Text className="text-[26px] font-bold leading-[34px] text-ink" accessibilityRole="header">
+                  {type.name}
+                </Text>
+                <Text className="text-[13px] leading-5 text-ink">{type.description}</Text>
+              </View>
+            </View>
+          </Sticker>
         </Animated.View>
 
-        <Text className="pt-2 text-base font-bold text-slate-800">そんなあなたに、この3つ</Text>
+        <Text className="pt-3 text-lg font-bold text-ink">そんなあなたに、この3つ</Text>
 
         {picks.isPending ? (
           <Loading label="さがしてるよ…" />
@@ -103,18 +112,12 @@ export default function QuizResult() {
           ))
         )}
 
-        <Text
-          className="py-2 text-center text-sm font-semibold text-slate-500"
-          onPress={() => router.replace("/quiz")}
-          accessibilityRole="button"
-        >
-          もう一回診断する
-        </Text>
+        <Button label="もう一回診断する" variant="quiet" onPress={() => router.replace("/quiz")} />
       </ScrollView>
 
-      <View className="gap-3 border-t border-slate-100 bg-white px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
+      <View className="gap-1 border-t-2 border-ink bg-sand px-5 pt-4" style={{ paddingBottom: insets.bottom + 8 }}>
         {shareNote ? (
-          <Text selectable className="text-center text-sm text-teal-700">
+          <Text selectable className="text-center text-sm text-sea-ink">
             {shareNote}
           </Text>
         ) : null}
@@ -124,19 +127,9 @@ export default function QuizResult() {
           disabled={picks.isFetching}
           extraConditions={{ quizType: type.id }}
         />
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Button label="結果をシェア" variant="secondary" onPress={shareResult} />
-          </View>
-          <View className="flex-1">
-            <Button
-              label="引き直す"
-              variant="secondary"
-              onPress={redraw}
-              loading={picks.isFetching}
-              disabled={spots.length === 0}
-            />
-          </View>
+        <View className="flex-row justify-center gap-6">
+          <Button label="引き直す" variant="quiet" onPress={redraw} disabled={spots.length === 0 || picks.isFetching} />
+          <Button label="結果をシェア" variant="quiet" onPress={shareResult} />
         </View>
       </View>
     </View>

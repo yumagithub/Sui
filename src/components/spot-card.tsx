@@ -1,12 +1,16 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { useMemo, type ReactNode } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/components/text";
 import Animated, { FadeIn, FadeInDown, FadeOut, useReducedMotion } from "react-native-reanimated";
 
 import { categoryOf, type IconName } from "@/constants/categories";
+import { COLORS } from "@/constants/colors";
 import { CARD_ENTER_MS, CARD_EXIT_MS, CARD_STAGGER_MS, EASE_OUT } from "@/constants/motion";
 import type { Database } from "@/lib/database.types";
+
+import { Sticker } from "./sticker";
 
 export type Candidate = Database["public"]["Functions"]["pick_candidates"]["Returns"][number];
 
@@ -45,9 +49,9 @@ function distanceLabel(m: number) {
 
 function Badge({ icon, label }: { icon: IconName; label: string }) {
   return (
-    <View className="flex-row items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
-      <Ionicons name={icon} size={13} color="#475569" />
-      <Text className="text-xs font-medium text-slate-600">{label}</Text>
+    <View className="flex-row items-center gap-1 rounded-full bg-sun-tint px-2.5 py-1">
+      <Ionicons name={icon} size={13} color={COLORS.inkSoft} />
+      <Text className="text-xs font-bold text-ink-soft">{label}</Text>
     </View>
   );
 }
@@ -78,11 +82,7 @@ export function SpotCard({ spot, index, showDistance = false, selected = false, 
 
   return (
     <Animated.View entering={entering} exiting={FadeOut.duration(CARD_EXIT_MS)}>
-      <View
-        className={`overflow-hidden rounded-3xl border-2 bg-white shadow-sm ${
-          selected ? "border-teal-600" : "border-transparent"
-        }`}
-      >
+      <Sticker color={selected ? COLORS.seaTint : COLORS.white} radius={22} offset={selected ? 5 : 3}>
         {spot.photo_url ? (
           <Image
             source={{ uri: spot.photo_url }}
@@ -92,26 +92,30 @@ export function SpotCard({ spot, index, showDistance = false, selected = false, 
             accessibilityIgnoresInvertColors
           />
         ) : (
-          <View className={`aspect-video items-center justify-center ${category.bg}`}>
+          <View className={`h-28 items-center justify-center border-b-2 border-ink ${category.bg}`}>
             <Ionicons name={category.icon} size={40} color={category.fg} />
           </View>
         )}
 
         <View className="gap-2 p-4">
           <View className="flex-row items-center gap-2">
-            <Text className="text-xs font-semibold text-teal-700">{category.label}</Text>
-            <Text className="text-xs text-slate-400">{spot.municipality}</Text>
-            {spot.relaxed ? (
-              <Text className="ml-auto text-xs text-amber-600">条件ゆるめ</Text>
+            <Text className="text-xs font-bold" style={{ color: category.fg }}>
+              {category.label}
+            </Text>
+            <Text className="text-xs text-ink-soft">{spot.municipality}</Text>
+            {selected ? (
+              <Text className="ml-auto rounded-full bg-sea-ink px-2 py-0.5 text-xs font-bold text-white">あなたの票</Text>
+            ) : spot.relaxed ? (
+              <Text className="ml-auto text-xs font-bold text-coral-ink">条件ゆるめ</Text>
             ) : null}
           </View>
 
-          <Text className="text-lg font-bold text-slate-900" numberOfLines={2}>
+          <Text className="text-xl font-bold text-ink" numberOfLines={2}>
             {spot.name}
           </Text>
 
           {spot.description ? (
-            <Text className="text-sm leading-5 text-slate-600" numberOfLines={3}>
+            <Text className="text-sm leading-5 text-ink-soft" numberOfLines={3}>
               {spot.description}
             </Text>
           ) : null}
@@ -127,7 +131,7 @@ export function SpotCard({ spot, index, showDistance = false, selected = false, 
           </View>
           {children}
         </View>
-      </View>
+      </Sticker>
     </Animated.View>
   );
 }

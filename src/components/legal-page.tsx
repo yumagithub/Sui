@@ -1,4 +1,5 @@
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/components/text";
 
 import { CONTACT, EFFECTIVE_DATE, OPERATOR } from "@/constants/legal";
 
@@ -12,23 +13,23 @@ export function LegalPage({ intro, sections }: { intro: string; sections: LegalS
       contentInsetAdjustmentBehavior="automatic"
       contentContainerClassName="gap-6 px-5 pb-12 pt-4"
     >
-      <Text className="text-sm leading-6 text-slate-600">{intro}</Text>
+      <Text className="text-sm leading-6 text-ink-soft">{intro}</Text>
       {sections.map((section, i) => (
         <View key={section.title} className="gap-2">
-          <Text className="text-base font-bold text-slate-900" accessibilityRole="header">
+          <Text className="text-base font-bold text-ink" accessibilityRole="header">
             {i + 1}. {section.title}
           </Text>
           {section.body.map((line) => (
-            <Text key={line} className="text-sm leading-6 text-slate-700">
+            <Text key={line} className="text-sm leading-6 text-ink">
               {line}
             </Text>
           ))}
         </View>
       ))}
-      <View className="gap-1 border-t border-slate-100 pt-4">
-        <Text className="text-xs text-slate-500">運営：{OPERATOR}</Text>
-        <Text className="text-xs text-slate-500">お問い合わせ：{CONTACT}</Text>
-        <Text className="text-xs text-slate-500">制定日：{EFFECTIVE_DATE}</Text>
+      <View className="gap-1 border-t border-ink/10 pt-4">
+        <Text className="text-xs text-ink-soft">運営：{OPERATOR}</Text>
+        <Text className="text-xs text-ink-soft">お問い合わせ：{CONTACT}</Text>
+        <Text className="text-xs text-ink-soft">制定日：{EFFECTIVE_DATE}</Text>
       </View>
     </ScrollView>
   );

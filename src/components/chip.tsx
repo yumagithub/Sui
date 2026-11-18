@@ -1,4 +1,7 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+
+import { Text } from "@/components/text";
+import { COLORS } from "@/constants/colors";
 
 import { PressableScale } from "./pressable-scale";
 
@@ -11,6 +14,7 @@ type Props = {
   disabled?: boolean;
 };
 
+/** 選択肢の丸いタグ。選ぶと濃い海の色になる */
 export function Chip({ label, selected, onPress, role = "radio", disabled }: Props) {
   return (
     <PressableScale
@@ -22,11 +26,10 @@ export function Chip({ label, selected, onPress, role = "radio", disabled }: Pro
       hitSlop={4}
     >
       <View
-        className={`min-h-11 justify-center rounded-full border px-4 ${
-          selected ? "border-teal-600 bg-teal-600" : "border-slate-200 bg-white"
-        } ${disabled ? "opacity-50" : ""}`}
+        className="min-h-11 justify-center rounded-full border-2 border-ink px-4"
+        style={{ backgroundColor: selected ? COLORS.seaInk : COLORS.white, opacity: disabled ? 0.5 : 1 }}
       >
-        <Text className={`text-[15px] font-semibold ${selected ? "text-white" : "text-slate-700"}`}>
+        <Text className="text-[15px] font-bold" style={{ color: selected ? COLORS.white : COLORS.ink }}>
           {label}
         </Text>
       </View>

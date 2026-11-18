@@ -1,16 +1,19 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/components/text";
 import Animated, { FadeIn, FadeInDown, useReducedMotion } from "react-native-reanimated";
 
 import { categoryOf } from "@/constants/categories";
+import { COLORS } from "@/constants/colors";
 import { EASE_OUT } from "@/constants/motion";
 import { openMaps } from "@/lib/maps";
 
 import type { SpotSummary } from "./spot-card";
 
 import { Button } from "./button";
+import { Sticker } from "./sticker";
 
 
 
@@ -28,24 +31,20 @@ function FeedbackCard({ answer, loading, error, onAnswer }: FeedbackProps) {
 
   if (answered) {
     return (
-      <View className="flex-row items-center gap-2 rounded-2xl bg-teal-50 p-4">
-        <Text className="flex-1 text-sm text-teal-800">
+      <View className="flex-row items-center gap-2 rounded-2xl border-2 border-ink bg-sea-tint p-4">
+        <Text className="flex-1 text-sm font-bold text-ink">
           ありがとう！（{answer ? "行った" : "行かなかった"}）
         </Text>
-        <Text
-          className="text-sm font-semibold text-teal-700 underline"
-          onPress={() => setEditing(true)}
-          accessibilityRole="button"
-        >
-          変える
-        </Text>
+        <Button label="変える" variant="quiet" onPress={() => setEditing(true)} />
       </View>
     );
   }
 
   return (
-    <View className="gap-3 rounded-2xl bg-white p-4">
-      <Text className="text-base font-bold text-slate-900">実際に行った？</Text>
+    <View className="gap-3 rounded-2xl border-2.5 border-ink bg-sun-tint p-4">
+      <Text className="text-lg font-bold text-ink" accessibilityRole="header">
+        実際に行った？
+      </Text>
       <View className="flex-row gap-3">
         <View className="flex-1">
           <Button
@@ -69,7 +68,7 @@ function FeedbackCard({ answer, loading, error, onAnswer }: FeedbackProps) {
           />
         </View>
       </View>
-      {error ? <Text className="text-sm text-red-600">送れなかった。もう一回押してね</Text> : null}
+      {error ? <Text className="text-sm font-bold text-coral-ink">送れなかった。もう一回押してね</Text> : null}
     </View>
   );
 }
@@ -95,7 +94,7 @@ export function DecidedView({ spot, voterNames, feedback }: Props) {
       {feedback ? <FeedbackCard {...feedback} /> : null}
 
       <Animated.View entering={entering}>
-        <View className="overflow-hidden rounded-3xl bg-white shadow-sm">
+        <Sticker color={COLORS.white} radius={28} offset={6} tilt={-1.5}>
           {spot.photo_url ? (
             <Image
               source={{ uri: spot.photo_url }}
@@ -105,22 +104,26 @@ export function DecidedView({ spot, voterNames, feedback }: Props) {
               accessibilityIgnoresInvertColors
             />
           ) : (
-            <View className={`aspect-[4/3] items-center justify-center ${categoryOf(spot.category).bg}`}>
+            <View className={`aspect-[4/3] items-center justify-center border-b-2.5 border-ink ${categoryOf(spot.category).bg}`}>
               <Ionicons name={categoryOf(spot.category).icon} size={56} color={categoryOf(spot.category).fg} />
             </View>
           )}
           <View className="gap-2 p-5">
-            <Text className="text-sm font-bold text-teal-700">ここに決定！</Text>
-            <Text className="text-3xl font-bold text-slate-900">{spot.name}</Text>
-            <Text className="text-sm text-slate-500">{spot.municipality}</Text>
-            {spot.description ? <Text className="text-sm leading-5 text-slate-600">{spot.description}</Text> : null}
+            <Text className="self-start rounded-full border-2 border-ink bg-sun px-3 py-0.5 text-sm font-bold text-ink">
+              ここに決定！
+            </Text>
+            <Text className="text-[32px] font-bold leading-[42px] text-ink" accessibilityRole="header">
+              {spot.name}
+            </Text>
+            <Text className="text-sm text-ink-soft">{spot.municipality}</Text>
+            {spot.description ? <Text className="text-sm leading-5 text-ink-soft">{spot.description}</Text> : null}
             {voterNames.length > 0 ? (
-              <Text className="text-xs text-slate-500">
+              <Text className="text-xs text-ink-soft">
                 {voterNames.length}票（{voterNames.join("・")}）
               </Text>
             ) : null}
           </View>
-        </View>
+        </Sticker>
       </Animated.View>
 
       <Button label="Googleマップで開く" onPress={() => openMaps(spot)} />

@@ -1,5 +1,6 @@
 import { useNetworkState } from "expo-network";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/components/text";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,7 +24,7 @@ function Banner() {
       style={{ position: "absolute", top: insets.top + 8, left: 16, right: 16, zIndex: 10 }}
       pointerEvents="none"
     >
-      <View className="rounded-2xl bg-slate-800 px-4 py-3" accessibilityRole="alert">
+      <View className="rounded-2xl bg-ink px-4 py-3" accessibilityRole="alert">
         <Text className="text-center text-sm font-semibold text-white">
           オフラインみたい。つながったら自動で読み直すよ
         </Text>

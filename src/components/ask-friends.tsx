@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Text } from "react-native";
+import { Text } from "@/components/text";
 
 import { CaptchaCancelledError, useEnsureSession } from "@/lib/auth";
 import { toStoredConditions, type Conditions } from "@/lib/conditions";
@@ -49,7 +49,7 @@ export function AskFriendsButton({ spotIds, conditions, disabled, extraCondition
   return (
     <>
       {sessionFailed ? (
-        <Text className="text-center text-sm text-red-600">うまくつながらなかった。もう一回試してね</Text>
+        <Text className="text-center text-sm text-coral-ink">うまくつながらなかった。もう一回試してね</Text>
       ) : null}
       <Button
         label="この3つで友達に聞く"

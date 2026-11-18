@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/components/text";
 
 import { Button } from "@/components/button";
 import { Problem } from "@/components/state-view";
@@ -36,22 +37,22 @@ export default function QuizTypePage() {
 
   return (
     <ScrollView
-      className="flex-1 bg-slate-50"
+      className="flex-1 bg-sand"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerClassName="gap-6 px-5 pb-10 pt-6"
     >
       <View className={`items-center gap-2 rounded-3xl px-5 py-8 ${type.bg}`}>
-        <Text className="text-sm font-semibold text-slate-600">友達の今日のタイプは…</Text>
+        <Text className="text-sm font-semibold text-ink-soft">友達の今日のタイプは…</Text>
         <Text className="text-6xl">{type.emoji}</Text>
-        <Text className="text-3xl font-bold text-slate-900" accessibilityRole="header">
+        <Text className="text-3xl font-bold text-ink" accessibilityRole="header">
           {type.name}
         </Text>
-        <Text className="text-center text-sm leading-5 text-slate-700">{type.description}</Text>
+        <Text className="text-center text-sm leading-5 text-ink">{type.description}</Text>
       </View>
 
       <View className="gap-2">
-        <Text className="text-center text-base font-bold text-slate-800">あなたは何タイプ？</Text>
-        <Text className="text-center text-sm text-slate-500">5つの質問に答えると、行き先が3つ出てくるよ</Text>
+        <Text className="text-center text-base font-bold text-ink">あなたは何タイプ？</Text>
+        <Text className="text-center text-sm text-ink-soft">5つの質問に答えると、行き先が3つ出てくるよ</Text>
       </View>
       <Button label="診断してみる" onPress={() => router.push("/quiz")} />
     </ScrollView>

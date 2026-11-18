@@ -1,31 +1,41 @@
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, View } from "react-native";
 
-import { PressableScale } from "./pressable-scale";
+import { Text } from "@/components/text";
+import { COLORS } from "@/constants/colors";
+
+import { Sticker } from "./sticker";
 
 type Props = {
   emoji: string;
   label: string;
   selected?: boolean;
-  /** 雨のときの「中でまったり」など、そっとすすめたいとき */
   hint?: string;
   onPress: () => void;
 };
 
-/** 診断の選択肢（大きなカード） */
+/** 大きな選択肢（診断の「今どのへん？」など）。白いステッカーで、選ぶと海の色 */
 export function QuizOption({ emoji, label, selected, hint, onPress }: Props) {
+  const [pressed, setPressed] = useState(false);
   return (
-    <PressableScale onPress={onPress} accessibilityRole="button" accessibilityLabel={hint ? `${label}（${hint}）` : label}>
-      <View
-        className={`min-h-16 flex-row items-center gap-4 rounded-2xl border-2 bg-white px-5 py-4 ${
-          selected ? "border-teal-600" : "border-transparent"
-        }`}
-      >
-        <Text className="text-3xl">{emoji}</Text>
-        <View className="flex-1 gap-0.5">
-          <Text className="text-base font-bold text-slate-800">{label}</Text>
-          {hint ? <Text className="text-xs font-semibold text-teal-700">{hint}</Text> : null}
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      pressRetentionOffset={16}
+      accessibilityRole="button"
+      accessibilityLabel={hint ? `${label}（${hint}）` : label}
+      accessibilityState={{ selected }}
+    >
+      <Sticker color={selected ? COLORS.seaTint : COLORS.white} radius={20} offset={4} pressed={pressed}>
+        <View className="min-h-16 flex-row items-center gap-4 px-5 py-4">
+          <Text className="text-3xl">{emoji}</Text>
+          <View className="flex-1 gap-0.5">
+            <Text className="text-[17px] font-bold text-ink">{label}</Text>
+            {hint ? <Text className="text-xs font-bold text-sea-ink">{hint}</Text> : null}
+          </View>
         </View>
-      </View>
-    </PressableScale>
+      </Sticker>
+    </Pressable>
   );
 }

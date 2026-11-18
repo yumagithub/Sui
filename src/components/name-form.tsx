@@ -1,6 +1,8 @@
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { Platform, TextInput, View } from "react-native";
+import { Text } from "@/components/text";
+import { COLORS, FONT_BODY_NATIVE, FONT_WEB } from "@/constants/colors";
 
 import { loadDisplayName } from "@/lib/prefs";
 
@@ -41,8 +43,10 @@ export function NameForm({ title, description, submitLabel, loading, error, onSu
   return (
     <View className="gap-4">
       <View className="gap-1">
-        <Text className="text-xl font-bold text-slate-900">{title}</Text>
-        {description ? <Text className="text-sm text-slate-500">{description}</Text> : null}
+        <Text className="text-[24px] font-bold text-ink" accessibilityRole="header">
+          {title}
+        </Text>
+        {description ? <Text className="text-sm text-ink-soft">{description}</Text> : null}
       </View>
       <TextInput
         value={name}
@@ -53,18 +57,19 @@ export function NameForm({ title, description, submitLabel, loading, error, onSu
         returnKeyType="done"
         onSubmitEditing={submit}
         accessibilityLabel="なまえ"
-        className="min-h-14 rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-900"
-        placeholderTextColor="#94a3b8"
+        className="min-h-14 rounded-2xl border-2.5 border-ink bg-white px-4 text-[17px] text-ink"
+        style={Platform.OS === "web" ? { fontFamily: FONT_WEB, fontWeight: "500" } : { fontFamily: FONT_BODY_NATIVE }}
+        placeholderTextColor={COLORS.inkFaint}
       />
-      {error ? <Text className="text-sm text-red-600">{error}</Text> : null}
+      {error ? <Text className="text-sm font-bold text-coral-ink">{error}</Text> : null}
       <Button label={submitLabel} onPress={submit} disabled={!valid} loading={loading} />
-      <Text className="text-center text-xs text-slate-400">
+      <Text className="text-center text-xs leading-5 text-ink-soft">
         進むと
-        <Link href="/terms" onPress={onLeave} className="text-slate-500 underline">
+        <Link href="/terms" onPress={onLeave} className="text-ink-soft underline">
           利用規約
         </Link>
         と
-        <Link href="/privacy" onPress={onLeave} className="text-slate-500 underline">
+        <Link href="/privacy" onPress={onLeave} className="text-ink-soft underline">
           プライバシーポリシー
         </Link>
         に同意したことになります

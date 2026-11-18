@@ -15,12 +15,16 @@ export function BottomSheet({ visible, onClose, children }: Props) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 justify-end">
         <Pressable
-          className="absolute inset-0 bg-black/30"
+          className="absolute inset-0 bg-ink/40"
           onPress={onClose}
           accessibilityRole="button"
           accessibilityLabel="閉じる"
         />
-        <View className="max-h-[85%] rounded-t-3xl bg-slate-50 px-5 pt-6" style={{ paddingBottom: insets.bottom + 16 }}>
+        <View
+          className="max-h-[85%] rounded-t-[28px] border-x-2.5 border-t-2.5 border-ink bg-sand px-5 pt-3"
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
+          <View className="mb-4 h-1.5 w-12 self-center rounded-full bg-ink/20" />
           {children}
         </View>
       </KeyboardAvoidingView>

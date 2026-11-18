@@ -1,5 +1,7 @@
 import { createContext, use, useCallback, useRef, useState, type PropsWithChildren } from "react";
-import { ActivityIndicator, Modal, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, View } from "react-native";
+import { Text } from "@/components/text";
+import { COLORS } from "@/constants/colors";
 
 import { Button } from "../button";
 import { WIDGET_HEIGHT, WIDGET_WIDTH } from "./types";
@@ -87,15 +89,15 @@ function CaptchaSheet({ siteKey, onToken, onCancel }: SheetProps) {
       <View className="flex-1 items-center justify-center bg-black/30 px-6">
         <View className="w-full max-w-sm items-center gap-4 rounded-3xl bg-white px-5 pb-5 pt-6">
           <View className="items-center gap-1">
-            <Text className="text-lg font-bold text-slate-900">ちょっと確認するね</Text>
-            <Text className="text-center text-sm text-slate-500">
+            <Text className="text-lg font-bold text-ink">ちょっと確認するね</Text>
+            <Text className="text-center text-sm text-ink-soft">
               {failed !== null
                 ? "うまく確認できなかった…"
                 : interactive
                   ? "チェックを入れてね"
                   : "ロボットじゃないか、自動でチェックしてるよ"}
             </Text>
-            {failed !== null ? <Text className="text-xs text-slate-400">コード {failed}</Text> : null}
+            {failed !== null ? <Text className="text-xs text-ink-faint">コード {failed}</Text> : null}
           </View>
 
           {failed !== null ? (
@@ -125,14 +127,14 @@ function CaptchaSheet({ siteKey, onToken, onCancel }: SheetProps) {
               {interactive ? null : (
                 // 自動で通るあいだは、透明なウィジェットの上にくるくるを重ねておく
                 <View pointerEvents="none" className="absolute inset-0 items-center justify-center bg-white">
-                  <ActivityIndicator color="#0d9488" />
+                  <ActivityIndicator color={COLORS.sea} />
                 </View>
               )}
             </View>
           )}
 
           <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="やめる" hitSlop={12}>
-            <Text className="text-sm font-semibold text-slate-500">やめる</Text>
+            <Text className="text-sm font-semibold text-ink-soft">やめる</Text>
           </Pressable>
         </View>
       </View>
